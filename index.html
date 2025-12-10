@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integra NFe - Sistema Completo</title>
+      <link rel="icon" type="image/png" href="https://www.melhorcomprar.com.br/images/lojas/cupom-desconto-skelt.webp">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4f46e5', secondary: '#0f172a', darkBg: '#0f172a', darkCard: '#1e293b' }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden-module { display: none !important; }
+        
+        /* Drag & Drop */
+        .drag-area { border: 2px dashed #cbd5e1; transition: all 0.3s ease; background: rgba(255,255,255,0.6); backdrop-filter: blur(4px); }
+        .drag-area:hover { border-color: #6366f1; transform: scale(1.01); }
+        .drag-area.active { border-color: #4f46e5; background-color: #eef2ff; transform: scale(1.02); }
+        .dark .drag-area { background: rgba(30, 41, 59, 0.6); border-color: #475569; }
+        
+        /* Tabelas */
+        .custom-table { border-collapse: separate; border-spacing: 0 8px; }
+        .custom-table thead tr th { border-bottom: none; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding-left: 1.5rem; }
+        .custom-table tbody tr { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s; }
+        .custom-table tbody tr:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); z-index: 10; position: relative; }
+        .custom-table td:first-child { border-top-left-radius: 0.75rem; border-bottom-left-radius: 0.75rem; }
+        .custom-table td:last-child { border-top-right-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+        .dark .custom-table tbody tr { background: #1e293b; box-shadow: none; }
+        .dark .custom-table tbody tr:hover { background: #334155; }
+
+        /* Inputs */
+        .modern-input { width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; background: #fff; font-size: 0.9rem; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .modern-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .dark .modern-input { background: #1e293b; border-color: #334155; color: #f8fafc; }
+        
+        /* Loading */
+        .dots { display: inline-flex; gap: 4px; align-items: flex-end; visibility: hidden; height: 18px; }
+        .dots.active { visibility: visible; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 1px solid #000; animation: dot-bounce 0.9s infinite ease-in-out; }
+        .dot:nth-child(2) { animation-delay: 0.12s; } .dot:nth-child(3) { animation-delay: 0.24s; }
+        @keyframes dot-bounce { 0%, 100% { transform: translateY(0); opacity: 0.7; } 50% { transform: translateY(-5px); opacity: 1; } }
+
+        /* Modais */
+        #detailsModal, #deleteModalCloud { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        .modal-content { max-height: 90vh; height: 90vh; overflow: hidden; } 
+        .hidden-force { display: none !important; }
+
+        /* Login */
+        #loginScreen { background-image: radial-gradient(at 50% 50%, hsla(253,16%,7%,1) 0, #0f172a 100%); }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex h-screen selection:bg-indigo-100 selection:text-indigo-700 overflow-hidden">
+
+    <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white/10 backdrop-blur-lg border border-white/20 p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg border border-black">
+                <i class="fas fa-shield-alt text-2xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Acesso Restrito</h2>
+            <p class="text-indigo-200 text-sm mb-6">Integra NFe System</p>
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="text-xs font-bold text-indigo-200 uppercase ml-1">Usuário</label>
+                    <input type="text" id="loginUser" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="ex: admin">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-indigo-200 uppercase ml-1">Senha</label>
+                    <input type="password" id="loginPass" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="••••••">
+                </div>
+                <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-500/30 transition transform active:scale-95 border border-black/20">
+                    Entrar no Sistema
+                </button>
+                <p id="loginError" class="text-red-400 text-xs text-center mt-2 hidden font-bold"><i class="fas fa-times-circle"></i> Credenciais inválidas</p>
+            </form>
+            <p class="text-white/20 text-[10px] mt-6">Use admin / 1234 para testar</p>
+        </div>
+    </div>
+
+    <aside class="w-72 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-r border-slate-200 dark:border-slate-700 hidden md:flex flex-col shrink-0 z-20 shadow-xl transition-colors">
+        <div class="p-8 pb-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 border border-slate-800">
+                <i class="fas fa-network-wired text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">Integra NFe</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Gestão Inteligente - SKELT</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-1 mt-6 overflow-y-auto">
+            <div class="px-4 mb-2 mt-2">
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Local</span>
+            </div>
+            <button onclick="switchModule('xml-import')" id="nav-xml" class="w-full text-left py-3 px-4 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm font-medium group relative overflow-hidden">
+                <i class="fas fa-file-invoice w-5 text-center transition-colors"></i> <span class="relative z-10">Análise XML</span>
+            </button>
+
+            <div class="px-4 mb-2 mt-8">
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nuvem (Cloud)</span>
+            </div>
+            <button onclick="switchModule('cloud-form')" id="nav-form" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
+                <i class="fas fa-cloud-upload-alt w-5 text-center"></i> Cadastrar Cobertura
+            </button>
+            <button onclick="switchModule('cloud-view')" id="nav-view" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
+                <i class="fas fa-database w-5 text-center"></i> Banco de Dados
+            </button>
+            <button onclick="switchModule('cloud-email')" id="nav-email" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
+                <i class="fas fa-envelope-open-text w-5 text-center"></i> Config. Emails
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100 dark:border-slate-700">
+            <button onclick="toggleDarkMode()" class="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2 mb-3 hover:bg-slate-200 dark:hover:bg-slate-600">
+                <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:inline text-amber-400"></i> <span id="themeText">Modo Escuro</span>
+            </button>
+            <div class="text-[10px] text-slate-400 text-center font-mono">v5.2 (João Lucas - Aprendiz)</div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-slate-50 dark:bg-slate-900 transition-colors">
+        
+        <div id="module-xml-import" class="module-content h-full flex flex-col fade-in">
+            <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700 p-6 flex justify-between items-center z-10 sticky top-0 transition-colors">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Importador XML</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Gerenciamento local de arquivos fiscais</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="clearData()" class="text-slate-500 dark:text-slate-400 hover:text-red-500 px-4 py-2 text-sm font-medium transition flex items-center gap-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <i class="fas fa-trash-alt"></i> Limpar Tudo
+                    </button>
+                    <button onclick="document.getElementById('fileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/30 transition transform active:scale-95 flex items-center gap-2 text-sm font-semibold border border-black">
+                        <i class="fas fa-plus"></i> Novo XML
+                    </button>
+                </div>
+                <input type="file" id="fileInput" accept=".xml" class="hidden" multiple onchange="handleFileUpload(this.files)">
+            </header>
+
+            <main class="p-8 space-y-8 overflow-y-auto flex-1 scroll-smooth">
+                <div id="dropZone" class="drag-area rounded-2xl p-10 text-center cursor-pointer group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 bg-white dark:bg-slate-700 rounded-full shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 text-indigo-500 dark:text-indigo-400 border border-slate-900">
+                            <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Arraste seus arquivos XML aqui</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group border border-black/10">
+                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform"><i class="fas fa-wallet text-9xl"></i></div>
+                        <p class="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Total Acumulado</p>
+                        <h3 class="text-3xl font-bold" id="kpiTotal">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Notas Processadas</p>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpiCount">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Impostos (ICMS+IPI)</p>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpiTax">R$ 0,00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto pb-4">
+                    <table class="w-full text-left custom-table">
+                        <thead>
+                            <tr>
+                                <th class="py-3">Data</th><th class="py-3">Fornecedor</th><th class="py-3">Nº Nota</th><th class="py-3 text-center">Itens</th><th class="py-3 text-right">Valor Total</th><th class="py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody"></tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+
+        <div id="module-cloud-form" class="module-content h-full flex flex-col hidden-module fade-in">
+            <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700 p-6 z-10 sticky top-0">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Cadastro de Cobertura</h2>
+            </header>
+            <main class="p-8 overflow-y-auto flex-1 max-w-5xl mx-auto w-full">
+                
+                <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-indigo-500/20 flex flex-col md:flex-row items-center justify-between gap-4 border border-black/10">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm"><i class="fas fa-magic text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-lg">Autopreencher com XML</h3>
+                            <p class="text-indigo-100 text-sm opacity-90">Agilize o processo carregando os dados automaticamente.</p>
+                        </div>
+                    </div>
+                    <label class="cursor-pointer bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-2 border border-black">
+                        <i class="fas fa-upload"></i> Carregar XML
+                        <input type="file" id="xmlAutoFill" accept=".xml" class="hidden" onchange="autofillFromXML(this.files)">
+                    </label>
+                </div>
+
+                <form id="nfForm" class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-6 transition-colors">
+                    <div id="xmlLinkedBanner" class="hidden bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl text-sm flex items-center gap-2 font-medium animate-pulse">
+                        <i class="fas fa-check-circle"></i> Dados do XML vinculados (<span id="xmlItemCount">0</span> itens)
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Razão Social</label>
+                            <input type="text" id="razao" required class="modern-input">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Fábrica Destino</label>
+                            <div class="relative">
+                                <select id="fabrica" required class="modern-input appearance-none cursor-pointer">
+                                    <option value="">-- Selecione --</option>
+                                    <option value="ICNB">ICNB</option>
+                                    <option value="UNA">UNA</option>
+                                    <option value="NATURELLE">NATURELLE</option>
+                                    <option value="DECOR">DECOR</option>
+                                    <option value="AERCAMP">AERCAMP</option>
+                                    <option value="LETS CARGO">LETS CARGO</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"><i class="fas fa-chevron-down text-xs"></i></div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Nº NF Venda</label>
+                            <input type="text" id="nfVenda" required class="modern-input font-mono numeric-input">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Nº NF Remessa (Forn.)</label>
+                            <input type="text" id="nfRemessa" class="modern-input font-mono numeric-input">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Nº NF Cobertura</label>
+                            <input type="text" id="nfCobertura" class="modern-input font-mono numeric-input">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Arquivo PDF</label>
+                            <input type="file" id="arquivo" accept="application/pdf" required class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-600 dark:file:text-indigo-400 hover:file:bg-indigo-100 transition cursor-pointer">
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Observação</label>
+                        <textarea id="observacao" rows="2" placeholder="Digite detalhes adicionais..." class="modern-input resize-none"></textarea>
+                    </div>
+
+                    <div class="pt-4">
+                        <button id="btnEnviarNF" type="button" class="w-full bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-xl shadow-slate-400/20 dark:shadow-indigo-500/20 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 border border-black" onclick="enviarNF()">
+                            <span class="btn-text">Enviar Nota Fiscal</span>
+                            <span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border-l-4 border-indigo-400">
+                        <strong class="text-indigo-900 dark:text-indigo-300 text-xs uppercase block mb-2 font-bold tracking-wide">Pré-visualização do texto:</strong>
+                        <p id="previewTextoCobertura" class="font-mono text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-words">Aguardando dados...</p>
+                    </div>
+                </form>
+            </main>
+        </div>
+
+        <div id="module-cloud-view" class="module-content h-full flex flex-col hidden-module fade-in">
+            <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700 p-6 flex flex-wrap gap-4 items-center justify-between z-10 sticky top-0">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard & Dados</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Análise de performance e registros</p>
+                </div>
+                <div class="flex gap-2">
+                     <button onclick="carregarNFs()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-bold shadow-lg shadow-indigo-500/20 transition border border-black"><i class="fas fa-sync-alt mr-2"></i> Atualizar</button>
+                     <button onclick="exportCSV()" class="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 text-sm font-bold shadow-sm transition"><i class="fas fa-file-csv mr-2"></i> Exportar</button>
+                </div>
+            </header>
+            <main class="p-8 overflow-y-auto flex-1">
+                
+                <div class="flex flex-wrap gap-4 mb-6 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 items-end transition-colors">
+                    <div class="w-full md:w-auto">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Data Inicial</label>
+                        <input type="date" id="dateStart" onchange="aplicarFiltroPesquisa()" class="modern-input">
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Data Final</label>
+                        <input type="date" id="dateEnd" onchange="aplicarFiltroPesquisa()" class="modern-input">
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Fábrica</label>
+                        <select id="filtroFabrica" onchange="aplicarFiltroPesquisa()" class="modern-input">
+                            <option value="">Todas</option>
+                            <option value="ICNB">ICNB</option>
+                            <option value="UNA">UNA</option>
+                            <option value="NATURELLE">NATURELLE</option>
+                            <option value="DECOR">DECOR</option>
+                            <option value="AERCAMP">AERCAMP</option>
+                            <option value="LETS CARGO">LETS CARGO</option>
+                        </select>
+                    </div>
+                    <div class="flex-[2] min-w-[200px]">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Pesquisar</label>
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Razão, nota, obs..." oninput="aplicarFiltroPesquisa()" class="modern-input pl-10">
+                            <i class="fas fa-search absolute left-3.5 top-3.5 text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 rounded-2xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden border border-black/10">
+                        <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">Valor Total (Período)</p>
+                        <h3 class="text-3xl font-bold" id="dashTotalValor">R$ 0,00</h3>
+                        <i class="fas fa-dollar-sign absolute right-4 bottom-4 text-emerald-800/20 text-6xl"></i>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden border border-black/10">
+                        <p class="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Quantidade de Notas</p>
+                        <h3 class="text-3xl font-bold" id="dashTotalQtd">0</h3>
+                        <i class="fas fa-file-invoice absolute right-4 bottom-4 text-blue-800/20 text-6xl"></i>
+                    </div>
+                     <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-lg shadow-indigo-500/20 text-white relative overflow-hidden border border-black/10">
+                        <p class="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">Ticket Médio</p>
+                        <h3 class="text-3xl font-bold" id="dashTicketMedio">R$ 0,00</h3>
+                        <i class="fas fa-chart-line absolute right-4 bottom-4 text-indigo-800/20 text-6xl"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden transition-colors">
+                        <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2"><i class="fas fa-chart-pie"></i> Valor Total por Fábrica (R$)</h3>
+                        <div class="h-64 w-full">
+                            <canvas id="chartValorFabrica"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden transition-colors">
+                        <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2"><i class="fas fa-chart-bar"></i> Quantidade por Fábrica</h3>
+                        <div class="h-64 w-full">
+                            <canvas id="chartQtdFabrica"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden transition-colors">
+                        <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2"><i class="fas fa-history"></i> Evolução Diária (Valores)</h3>
+                        <div class="h-64 w-full">
+                            <canvas id="chartTimeline"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto pb-6">
+                    <table id="nfTable" class="w-full text-left custom-table">
+                        <thead>
+                            <tr>
+                                <th class="py-3">Data</th>
+                                <th>Razão Social</th>
+                                <th>NF Venda</th>
+                                <th>NF Remessa</th>
+                                <th>NF Cobertura</th>
+                                <th>Fábrica</th>
+                                <th class="text-center">Original</th>
+                                <th class="text-center">Retorno</th> <th class="text-center">Obs</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-600 dark:text-slate-300">
+                            <tr><td colspan="10" class="text-center py-12 text-slate-400 italic">Clique em Atualizar para carregar dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="paginationBar" class="flex items-center justify-between mt-2 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                    <div class="flex gap-2">
+                         <button onclick="changePage(-1)" id="prevBtn" disabled class="px-4 py-2 rounded-lg border dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-sm font-medium transition dark:text-slate-300">Anterior</button>
+                         <button onclick="changePage(1)" id="nextBtn" disabled class="px-4 py-2 rounded-lg border dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-sm font-medium transition dark:text-slate-300">Próximo</button>
+                    </div>
+                    <span id="showingInfo" class="text-xs font-bold text-slate-400 uppercase tracking-wide"></span>
+                    <select id="rowsPerPage" onchange="changeRowsPerPage()" class="border-none bg-slate-50 dark:bg-slate-900 rounded-lg p-2 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-0 cursor-pointer">
+                        <option value="10">10 / pág</option>
+                        <option value="50">50 / pág</option>
+                        <option value="100">100 / pág</option>
+                    </select>
+                </div>
+            </main>
+        </div>
+
+        <div id="module-cloud-email" class="module-content h-full flex flex-col hidden-module fade-in">
+            <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700 p-6 z-10 sticky top-0">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Configuração de Emails</h2>
+            </header>
+            <main class="p-8 overflow-y-auto flex-1 max-w-4xl mx-auto w-full">
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 mb-8 transition-colors">
+                    
+                    <form id="emailsForm" class="space-y-6">
+                        <div class="grid md:grid-cols-1 gap-6">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Fábrica</label>
+                                <select id="emailFabrica" required class="modern-input">
+                                    <option value="">-- Selecione --</option>
+                                    <option value="ICNB">ICNB</option>
+                                    <option value="UNA">UNA</option>
+                                    <option value="NATURELLE">NATURELLE</option>
+                                    <option value="DECOR">DECOR</option>
+                                    <option value="AERCAMP">AERCAMP</option>
+                                </select>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Para (Destinatários)</label>
+                                    <input type="text" id="emailPara" placeholder="email1@ex.com, email2@ex.com" class="modern-input">
+                                    <p class="text-[10px] text-slate-400 ml-1">Separe múltiplos e-mails por vírgula</p>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Cópia (CC)</label>
+                                    <input type="text" id="emailCc" placeholder="chefe@ex.com, financeiro@ex.com" class="modern-input">
+                                    <p class="text-[10px] text-slate-400 ml-1">Opcional. Separe por vírgula.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="btnSaveEmail" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition border border-black flex justify-center items-center gap-2" onclick="salvarEmails()">
+                            <i class="fas fa-save"></i> <span>Salvar Configuração</span>
+                        </button>
+                    </form>
+
+                </div>
+                
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">E-mails Cadastrados</h3>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors">
+                    <table id="emailsTable" class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs uppercase font-bold border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="p-4">Fábrica</th>
+                                <th class="p-4">Destinatários</th>
+                                <th class="p-4">Cópia (CC)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-600 dark:text-slate-300 divide-y divide-slate-100 dark:divide-slate-700"><tr><td colspan="3" class="text-center p-6">Carregando...</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <button onclick="carregarEmails()" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-bold flex items-center justify-end gap-2 w-full"><i class="fas fa-sync-alt"></i> Atualizar Lista</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="detailsModal" class="fixed inset-0 hidden flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-7xl rounded-2xl shadow-2xl modal-content transform transition-all flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-900 text-white px-8 py-4 flex justify-between items-center sticky top-0 z-20 shrink-0">
+                <h3 class="text-xl font-bold flex items-center gap-3"><i class="fas fa-receipt text-indigo-400"></i> <span id="modalTitle">Nota Fiscal</span></h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row h-full overflow-hidden">
+                <div class="lg:w-1/2 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-800 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <p class="text-xs text-slate-400 uppercase font-bold mb-1 tracking-wider">Emitente</p>
+                            <p class="font-bold text-slate-800 dark:text-white text-md leading-tight" id="modalEmitente">-</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1 bg-slate-100 dark:bg-slate-800 inline-block px-2 py-1 rounded" id="modalCnpjEmit">-</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <p class="text-xs text-slate-400 uppercase font-bold mb-1 tracking-wider">Destinatário</p>
+                            <p class="font-bold text-slate-800 dark:text-white text-md leading-tight" id="modalDestinatario">-</p>
+                        </div>
+                    </div>
+                    
+                    <div id="refSection" class="hidden-force bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl p-4">
+                        <h4 class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase mb-2 flex items-center gap-2"><i class="fas fa-link"></i> Referências</h4>
+                        <ul id="refList" class="text-xs text-amber-900 dark:text-amber-300 font-mono space-y-1 ml-4 list-disc"></ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-2 text-md">Itens da Nota</h4>
+                        <div class="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 shadow-sm">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold uppercase text-xs">
+                                    <tr>
+                                        <th class="px-4 py-2">Cód.</th>
+                                        <th class="px-4 py-2">Descrição</th>
+                                        <th class="px-4 py-2 text-right">Qtd.</th>
+                                        <th class="px-4 py-2 text-right">V. Unit</th> <th class="px-4 py-2 text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalItemsTable" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <div id="modalFooterActions" class="flex gap-2"></div>
+                        <div class="text-right">
+                             <span class="text-sm text-slate-500 font-medium">Valor Total</span>
+                             <span id="modalTotalNF" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 block tracking-tight">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:w-1/2 bg-slate-200 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col">
+                    <div id="pdfContainer" class="flex-1 w-full h-full relative">
+                        <div id="pdfPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                            <i class="fas fa-file-pdf text-6xl mb-4"></i>
+                            <p>Selecione um PDF ou link indisponível</p>
+                        </div>
+                        <iframe id="pdfFrame" class="w-full h-full hidden" src=""></iframe>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-2 text-center border-t border-slate-200 dark:border-slate-700">
+                        <a id="pdfExternalLink" href="#" target="_blank" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                            <i class="fas fa-external-link-alt mr-1"></i> Abrir PDF em nova aba
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModalCloud" class="fixed inset-0 hidden flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700 transform transition-all scale-100">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl border border-black/10">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Tem certeza?</h3>
+            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">Essa ação removerá o registro permanentemente.</p>
+            <div class="flex justify-center gap-3">
+                <button onclick="document.getElementById('deleteModalCloud').classList.add('hidden')" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">Cancelar</button>
+                <button id="confirmDeleteCloud" class="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-500/30 transition border border-black/20">Sim, excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedback" class="fixed top-6 right-6 bg-slate-800/90 dark:bg-slate-700/90 backdrop-blur text-white px-6 py-4 rounded-xl shadow-2xl hidden z-[100] flex items-center gap-3 transform transition-all translate-y-0 border border-slate-700">
+        <i class="fas fa-info-circle text-blue-400 text-xl"></i> 
+        <div>
+            <h4 class="font-bold text-sm">Status</h4>
+            <span id="feedbackText" class="text-xs text-slate-300">Operação realizada!</span>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+           CORE E UTILITÁRIOS
+           ========================================= */
+        const webAppURL = "https://script.google.com/macros/s/AKfycbxsBSC9KO-PZqHxdE9000lnN0JSiV-vK6vUwSpqoITWeJEPEudjPtQPTMa7Gm2MRdW3/exec";
+        
+        let currentCloudXMLData = null; 
+        let myChart = null; 
+        let currentModalData = null; 
+        let chartsInstance = {}; // Gerencia múltiplas instâncias de gráficos
+
+        /* --- LOGIN LOGIC --- */
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+            const errorMsg = document.getElementById('loginError');
+            const btn = e.target.querySelector('button');
+
+            btn.innerText = "Verificando..."; btn.disabled = true;
+            let isValid = false;
+            if(u === 'admin' && p === '1234') isValid = true; 
+
+            setTimeout(() => {
+                if(isValid) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    localStorage.setItem('isLoggedIn', 'true');
+                } else {
+                    errorMsg.classList.remove('hidden');
+                    btn.innerText = "Entrar no Sistema"; btn.disabled = false;
+                }
+            }, 800);
+        }
+        if(localStorage.getItem('isLoggedIn') === 'true') document.getElementById('loginScreen').classList.add('hidden');
+
+        /* --- DARK MODE LOGIC --- */
+        function toggleDarkMode() {
+            const html = document.querySelector('html');
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeText').innerText = isDark ? "Modo Claro" : "Modo Escuro";
+            updateChartTheme();
+        }
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.querySelector('html').classList.add('dark');
+                document.getElementById('themeText').innerText = "Modo Claro";
+            }
+        }
+
+        /* --- NAVIGATION --- */
+        function switchModule(moduleName) {
+            document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden-module'));
+            const target = document.getElementById('module-' + moduleName);
+            if(target) target.classList.remove('hidden-module');
+            
+            const buttons = ['xml', 'form', 'view', 'email'];
+            buttons.forEach(b => {
+                const btn = document.getElementById('nav-' + b);
+                const isActive = 'nav-' + b === 'nav-' + (moduleName.replace('import', 'xml'));
+                if(isActive) {
+                    btn.className = "w-full text-left py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 flex items-center gap-3 text-sm font-bold group border border-black";
+                    btn.querySelector('i').classList.remove('text-indigo-500', 'dark:text-indigo-400');
+                } else {
+                    btn.className = "w-full text-left py-3 px-4 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm font-medium group text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400";
+                }
+            });
+            if(moduleName === 'cloud-view') { carregarNFs(); setTimeout(updateCharts, 100); }
+            if(moduleName === 'cloud-email') carregarEmails();
+        }
+
+        function mostrarFeedback(txt) {
+            const f = document.getElementById('feedback');
+            document.getElementById('feedbackText').innerText = txt;
+            f.classList.remove('hidden', 'translate-y-[-20px]', 'opacity-0');
+            setTimeout(() => f.classList.add('hidden'), 4000);
+        }
+
+        function fmt(val) { return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        
+        function downloadTextFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/xml' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
+        }
+
+        function initMasks() {
+            document.querySelectorAll('.numeric-input').forEach(input => {
+                new Cleave(input, { blocks: [44], numericOnly: true });
+            });
+        }
+
+        /* =========================================
+           PARSER XML 
+           ========================================= */
+        function extractSpecialCode(text) {
+            if (!text) return null;
+            const regex = /\b(EMB|MKT)[-.\w]*\b/gi;
+            const found = text.match(regex);
+            return found ? found[0].toUpperCase() : null;
+        }
+
+        function parseNFeData(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            const txt = (el, tag) => el?.getElementsByTagName(tag)[0]?.textContent || '';
+            const float = (el, tag) => parseFloat(txt(el, tag)) || 0;
+
+            const infNFe = xmlDoc.getElementsByTagName("infNFe")[0];
+            if (!infNFe) return null;
+
+            const ide = infNFe.getElementsByTagName("ide")[0];
+            const emit = infNFe.getElementsByTagName("emit")[0];
+            const dest = infNFe.getElementsByTagName("dest")[0];
+            const total = infNFe.getElementsByTagName("ICMSTot")[0]; 
+            const infAdic = infNFe.getElementsByTagName("infAdic")[0];
+            const protNFe = xmlDoc.getElementsByTagName("protNFe")[0];
+
+            const enderEmit = emit.getElementsByTagName("enderEmit")[0];
+            const enderDest = dest.getElementsByTagName("enderDest")[0];
+
+            const getAddr = (ender) => {
+                if(!ender) return '';
+                return `${txt(ender, "xLgr")}, ${txt(ender, "nro")} - ${txt(ender, "xBairro")} - ${txt(ender, "xMun")}/${txt(ender, "UF")}`;
+            };
+
+            const refs = [];
+            const nfRefTags = infNFe.getElementsByTagName("NFref");
+            for(let r of nfRefTags) { const key = txt(r, "refNFe"); if(key) refs.push(`Ref: ${key}`); }
+            const infCpl = txt(infAdic, "infCpl");
+
+            const items = [];
+            const detTags = infNFe.getElementsByTagName("det");
+            for (let det of detTags) {
+                const prod = det.getElementsByTagName("prod")[0];
+                const imposto = det.getElementsByTagName("imposto")[0];
+                const icms = imposto?.getElementsByTagName("ICMS")[0]; 
+                const icmsTag = icms ? icms.children[0] : null;
+
+                const xProd = txt(prod, "xProd");
+                const cProd = txt(prod, "cProd");
+                const infItem = txt(det, "infAdProd");
+                const special = extractSpecialCode(xProd) || extractSpecialCode(infItem);
+                
+                items.push({
+                    codigo: special ? special : cProd,
+                    desc: xProd,
+                    ncm: txt(prod, "NCM"),
+                    cst: icmsTag ? (txt(icmsTag, "CST") || txt(icmsTag, "CSOSN")) : '',
+                    cfop: txt(prod, "CFOP"),
+                    un: txt(prod, "uCom"),
+                    qtd: float(prod, "qCom"),
+                    vUnit: float(prod, "vUnCom"),
+                    vTotal: float(prod, "vProd"),
+                    vBc: float(icmsTag, "vBC"),
+                    vIcms: float(icmsTag, "vICMS"),
+                    pIcms: float(icmsTag, "pICMS"),
+                    vIpi: float(imposto?.getElementsByTagName("IPI")[0], "vIPI"),
+                    pIpi: float(imposto?.getElementsByTagName("IPI")[0], "pIPI")
+                });
+            }
+
+            let chave = infNFe.getAttribute("Id");
+            if(chave && chave.startsWith("NFe")) chave = chave.substring(3);
+
+            return {
+                id: chave,
+                chaveFormatada: chave ? chave.replace(/(\d{4})/g, '$1 ').trim() : '',
+                natOp: txt(ide, "natOp"),
+                nNF: txt(ide, "nNF"), 
+                serie: txt(ide, "serie"), 
+                dhEmi: txt(ide, "dhEmi"),
+                dhSaiEnt: txt(ide, "dhSaiEnt"),
+                tpNF: txt(ide, "tpNF"), 
+                emit: txt(emit, "xNome"), 
+                cnpjEmit: txt(emit, "CNPJ"),
+                ieEmit: txt(emit, "IE"),
+                endEmit: getAddr(enderEmit),
+                dest: txt(dest, "xNome"),
+                cnpjDest: txt(dest, "CNPJ") || txt(dest, "CPF"),
+                ieDest: txt(dest, "IE"),
+                endDest: getAddr(enderDest),
+                vBC: float(total, "vBC"),
+                vICMS: float(total, "vICMS"),
+                vBCST: float(total, "vBCST"),
+                vST: float(total, "vST"),
+                vProd: float(total, "vProd"),
+                vFrete: float(total, "vFrete"),
+                vSeg: float(total, "vSeg"),
+                vDesc: float(total, "vDesc"),
+                vIPI: float(total, "vIPI"),
+                vPIS: float(total, "vPIS"),
+                vCOFINS: float(total, "vCOFINS"),
+                vOutro: float(total, "vOutro"),
+                vNF: float(total, "vNF"), 
+                vTax: float(total, "vICMS") + float(total, "vIPI"),
+                nProt: txt(protNFe?.getElementsByTagName("infProt")[0], "nProt"),
+                itens: items, 
+                referencias: refs,
+                infCpl: infCpl,
+                rawXml: xmlString 
+            };
+        }
+
+        /* =========================================
+           GERADOR DE DANFE VISUAL
+           ========================================= */
+        function gerarDanfe(nfData) {
+            if(!nfData) return alert("Dados indisponíveis para gerar DANFE.");
+
+            const win = window.open('', '_blank');
+            const fmtMoeda = (v) => Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const fmtData = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '';
+            const fmtQtd = (v) => Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 4});
+
+            const css = `
+                @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+                body { margin: 0; padding: 10mm; font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; font-size: 10px; -webkit-print-color-adjust: exact; }
+                .danfe-container { border: 1px solid #000; width: 100%; max-width: 210mm; margin: 0 auto; }
+                .row { display: flex; width: 100%; }
+                .col { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 2px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
+                .col:last-child { border-right: none; }
+                .label { font-size: 7px; text-transform: uppercase; color: #444; margin-bottom: 1px; }
+                .value { font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .title { font-weight: bold; text-align: center; background: #eee; border-bottom: 1px solid #000; padding: 2px; text-transform: uppercase; font-size: 9px; }
+                .center { text-align: center; }
+                .right { text-align: right; }
+                .bold { font-weight: bold; }
+                .wrap { white-space: normal; }
+                .canhoto { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+                .header-main { display: flex; border-bottom: 1px solid #000; }
+                .logo-area { width: 100px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #000; border-bottom: 1px solid #000; }
+                .danfe-ident { flex: 1; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; }
+                .barcode-area { width: 280px; padding: 5px; border-bottom: 1px solid #000; }
+                .big-number { font-size: 14px; }
+                .items-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 5px; }
+                .items-table th { border: 1px solid #000; background: #ddd; padding: 2px; font-weight: bold; font-size: 7px; }
+                .items-table td { border: 1px solid #000; padding: 2px; }
+                .no-border-bottom { border-bottom: none !important; }
+                .no-border-right { border-right: none !important; }
+                .h-25 { height: 25px; }
+                @media print { body { padding: 0; margin: 5mm; } .danfe-container { border: 2px solid #000; } button { display: none; } }
+            `;
+
+            const itensHtml = nfData.itens.map(i => `
+                <tr>
+                    <td>${i.codigo}</td><td>${i.desc}</td><td class="center">${i.ncm || ''}</td><td class="center">${i.cst || ''}</td>
+                    <td class="center">${i.cfop || ''}</td><td class="center">${i.un}</td><td class="right">${fmtQtd(i.qtd)}</td>
+                    <td class="right">${fmtMoeda(i.vUnit)}</td><td class="right bold">${fmtMoeda(i.vTotal)}</td>
+                    <td class="right">${fmtMoeda(i.vBc)}</td><td class="right">${fmtMoeda(i.vIcms)}</td><td class="right">${fmtMoeda(i.vIpi)}</td>
+                    <td class="right">${Number(i.pIcms||0).toFixed(0)}%</td><td class="right">${Number(i.pIpi||0).toFixed(0)}%</td>
+                </tr>
+            `).join('');
+
+            const emptyRows = Math.max(0, 12 - nfData.itens.length);
+            const emptyHtml = Array(emptyRows).fill('<tr><td colspan="14" style="border:none; border-left:1px solid #000; border-right:1px solid #000; color:transparent;">.</td></tr>').join('');
+
+            const html = `
+            <!DOCTYPE html><html><head><title>DANFE - ${nfData.nNF}</title><style>${css}</style>
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script></head>
+            <body onload="initBarcode()"><div style="text-align:center; margin-bottom:10px;"><button onclick="window.print()" style="padding:10px 20px; font-size:16px; cursor:pointer;">IMPRIMIR DANFE</button></div>
+                <div class="danfe-container canhoto no-border-bottom">
+                    <div class="row"><div class="col" style="flex:4"><span class="label">RECEBEMOS DE ${nfData.emit.substring(0,40)}</span><div style="margin-top:10px; font-size:11px; text-align:center;">DATA DE RECEBIMENTO ______/______/______</div></div>
+                    <div class="col center" style="flex:1"><span class="label">NF-e</span><span class="value big-number">Nº ${nfData.nNF}</span><span class="label">SÉRIE ${nfData.serie}</span></div></div>
+                </div>
+                <div class="danfe-container">
+                    <div class="header-main"><div class="logo-area"><span style="font-size:12px; font-weight:bold; color:#ccc;">LOGO</span></div>
+                        <div class="col" style="flex:3; border-bottom:0; border-right:1px solid #000;"><div style="padding:5px;"><div class="value big-number wrap">${nfData.emit}</div><div class="label wrap" style="margin-top:2px;">${nfData.endEmit}</div><div class="label" style="margin-top:2px;">CNPJ: ${nfData.cnpjEmit} IE: ${nfData.ieEmit}</div></div></div>
+                        <div class="danfe-ident" style="border-bottom:0;"><div class="big-number bold">DANFE</div><div class="label">DOCUMENTO AUXILIAR DA<br>NOTA FISCAL ELETRÔNICA</div>
+                        <div class="row" style="margin-top:5px; justify-content:center;"><div style="text-align:left; margin-right:10px;"><span class="value">0 - ENTRADA</span><br><span class="value">1 - SAÍDA</span></div><div style="border:1px solid #000; padding:2px 6px; height:20px; font-size:14px; font-weight:bold;">${nfData.tpNF || '1'}</div></div>
+                        <div class="value bold" style="margin-top:5px;">Nº ${nfData.nNF}</div><div class="value">SÉRIE ${nfData.serie}</div></div>
+                        <div class="col" style="width:310px; border-bottom:0; border-right:0;"><div class="barcode-area center" style="border-right:0;"><svg id="barcode"></svg></div>
+                        <div class="col" style="border-right:0;"><span class="label">CHAVE DE ACESSO</span><span class="value center" style="letter-spacing:1px;">${nfData.chaveFormatada}</span></div>
+                        <div class="col" style="border-right:0; border-bottom:0;"><span class="label">CONSULTA NO PORTAL NACIONAL DA NF-E</span><span class="value center">www.nfe.fazenda.gov.br/portal</span></div></div>
+                    </div>
+                    <div class="row"><div class="col" style="flex:3"><span class="label">NATUREZA DA OPERAÇÃO</span><span class="value">${nfData.natOp || 'Venda de Mercadorias'}</span></div><div class="col" style="flex:2; border-right:0;"><span class="label">PROTOCOLO</span><span class="value">${nfData.nProt || '-'}</span></div></div>
+                    <div class="title">DESTINATÁRIO / REMETENTE</div>
+                    <div class="row"><div class="col" style="flex:4"><span class="label">NOME / RAZÃO SOCIAL</span><span class="value">${nfData.dest}</span></div><div class="col" style="flex:2"><span class="label">CNPJ / CPF</span><span class="value">${nfData.cnpjDest || ''}</span></div><div class="col" style="flex:1; border-right:0;"><span class="label">DATA EMISSÃO</span><span class="value center">${fmtData(nfData.dhEmi)}</span></div></div>
+                    <div class="row"><div class="col" style="flex:3"><span class="label">ENDEREÇO</span><span class="value">${nfData.endDest || ''}</span></div><div class="col" style="flex:2"><span class="label">INSCRIÇÃO ESTADUAL</span><span class="value">${nfData.ieDest || ''}</span></div><div class="col" style="flex:1; border-right:0;"><span class="label">DATA SAÍDA</span><span class="value center">${fmtData(nfData.dhSaiEnt)}</span></div></div>
+                    <div class="title">CÁLCULO DO IMPOSTO</div>
+                    <div class="row"><div class="col" style="flex:1"><span class="label">BC ICMS</span><span class="value right">${fmtMoeda(nfData.vBC)}</span></div><div class="col" style="flex:1"><span class="label">VALOR ICMS</span><span class="value right">${fmtMoeda(nfData.vICMS)}</span></div><div class="col" style="flex:1"><span class="label">BC ICMS ST</span><span class="value right">${fmtMoeda(nfData.vBCST)}</span></div><div class="col" style="flex:1"><span class="label">VALOR ICMS ST</span><span class="value right">${fmtMoeda(nfData.vST)}</span></div><div class="col" style="flex:1"><span class="label">V. PRODUTOS</span><span class="value right">${fmtMoeda(nfData.vProd)}</span></div><div class="col" style="flex:1; border-right:0;"><span class="label">V. TOTAL NOTA</span><span class="value right bold">${fmtMoeda(nfData.vNF)}</span></div></div>
+                    <div class="title" style="margin-top:0;">DADOS DO PRODUTO / SERVIÇO</div>
+                    <table class="items-table"><thead><tr><th style="width:50px">CÓDIGO</th><th>DESCRIÇÃO</th><th style="width:40px">NCM</th><th style="width:30px">CST</th><th style="width:30px">CFOP</th><th style="width:30px">UN</th><th style="width:40px">QTD</th><th style="width:50px">V.UNIT</th><th style="width:50px">V.TOTAL</th><th style="width:50px">BC ICMS</th><th style="width:40px">V.ICMS</th><th style="width:40px">V.IPI</th><th style="width:30px">%ICMS</th><th style="width:30px">%IPI</th></tr></thead><tbody>${itensHtml}${emptyHtml}</tbody></table>
+                    <div class="title" style="margin-top:5px;">DADOS ADICIONAIS</div>
+                    <div class="row" style="height:100px; border-bottom:0;"><div class="col" style="flex:1; border-right:0; border-bottom:0;"><span class="label">INFORMAÇÕES COMPLEMENTARES</span><span class="value wrap" style="font-weight:normal; font-size:9px;">${nfData.infCpl || ''} <br> ${nfData.referencias.join(' - ')}</span></div></div>
+                </div>
+                <script>function initBarcode() { try { JsBarcode("#barcode", "${nfData.id}", { format: "CODE128", displayValue: false, height: 35, width: 1, margin: 0 }); } catch(e) { console.error("Erro barcode", e); } }<\/script>
+            </body></html>`;
+            win.document.write(html); win.document.close();
+        }
+
+        /* =========================================
+           MÓDULO 1: IMPORTADOR XML LOCAL
+           ========================================= */
+        let localInvoices = [];
+
+        function initXMLModule() {
+            loadFromStorage();
+            const dz = document.getElementById("dropZone");
+            dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('active'); });
+            dz.addEventListener('dragleave', () => dz.classList.remove('active'));
+            dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('active'); handleFileUpload(e.dataTransfer.files); });
+        }
+
+        function handleFileUpload(files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = parseNFeData(e.target.result);
+                    if(data) {
+                        localInvoices.push(data);
+                        saveToStorage();
+                        renderLocalTable();
+                    } else { alert('XML Inválido: ' + file.name); }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function renderLocalTable() {
+            const tbody = document.getElementById("invoiceTableBody");
+            tbody.innerHTML = "";
+            let totalVal = 0, totalTax = 0;
+            localInvoices.sort((a,b) => new Date(b.dhEmi) - new Date(a.dhEmi));
+
+            localInvoices.forEach((nf, index) => {
+                totalVal += nf.vNF; totalTax += nf.vTax;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm border-l-4 border-l-transparent hover:border-l-indigo-500 transition-all">${new Date(nf.dhEmi).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300 text-sm">${nf.emit.substring(0,25)}...</td>
+                        <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700 rounded w-fit">#${nf.nNF}</td>
+                        <td class="px-6 py-4 text-center"><span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-2 py-1 rounded-md text-xs font-bold">${nf.itens.length}</span></td>
+                        <td class="px-6 py-4 text-right font-bold text-slate-700 dark:text-slate-300">${fmt(nf.vNF)}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button title="Ver Detalhes" onclick="openModalLocal(${index})" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-slate-400 hover:text-blue-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600"><i class="fas fa-eye"></i></button>
+                                <button title="Baixar XML" onclick="downloadLocalXML(${index})" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-slate-400 hover:text-emerald-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600"><i class="fas fa-download"></i></button>
+                                <button title="Excluir" onclick="removeInvoiceLocal(${index})" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-red-100 dark:hover:bg-red-900/50 text-slate-400 hover:text-red-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            document.getElementById("kpiTotal").innerText = fmt(totalVal);
+            document.getElementById("kpiCount").innerText = localInvoices.length;
+            document.getElementById("kpiTax").innerText = fmt(totalTax);
+            if(localInvoices.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400 dark:text-slate-500 font-medium">Nenhum XML importado ainda.</td></tr>`;
+        }
+
+        function openModalLocal(index) {
+            const nf = localInvoices[index];
+            if(!nf) return;
+            populateAndShowModal(nf);
+            
+            document.getElementById('pdfContainer').classList.add('hidden');
+            document.getElementById('pdfPlaceholder').innerHTML = '<i class="fas fa-file-invoice text-6xl mb-4"></i><p>XML Local (Sem PDF)</p>';
+            
+            const footer = document.getElementById('modalFooterActions');
+            footer.innerHTML = `
+                <button onclick="downloadLocalXML(${index})" class="text-emerald-600 hover:text-emerald-800 text-sm font-bold flex items-center bg-emerald-50 px-3 py-2 rounded-lg transition"><i class="fas fa-download mr-2"></i> Baixar XML</button>
+                <button onclick="gerarDanfe(currentModalData)" class="text-slate-600 hover:text-slate-800 text-sm font-bold flex items-center bg-slate-100 px-3 py-2 rounded-lg transition"><i class="fas fa-print mr-2"></i> Visualizar DANFE</button>
+            `;
+        }
+
+        function downloadLocalXML(index) {
+            const nf = localInvoices[index];
+            if(nf && nf.rawXml) downloadTextFile(`NFe-${nf.nNF}.xml`, nf.rawXml);
+            else alert("Conteúdo XML não disponível.");
+        }
+
+        function removeInvoiceLocal(i) { if(confirm('Remover?')) { localInvoices.splice(i, 1); saveToStorage(); renderLocalTable(); } }
+        function clearData() { if(confirm("Limpar tudo?")) { localStorage.removeItem('nfe_v4_data'); localInvoices = []; renderLocalTable(); } }
+        function saveToStorage() { localStorage.setItem('nfe_v4_data', JSON.stringify(localInvoices)); }
+        function loadFromStorage() { const d = localStorage.getItem('nfe_v4_data'); if(d) { localInvoices = JSON.parse(d); renderLocalTable(); } }
+
+
+        /* =========================================
+           MÓDULO 2 & 3: CLOUD & EMAIL LOGIC
+           ========================================= */
+        let allData = [], workingData = [];
+        let currentPage = 1, rowsPerPage = 10;
+        let deleteIdCloud = null;
+
+        function autofillFromXML(files) {
+            if(files.length === 0) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = parseNFeData(e.target.result);
+                if(data) {
+                    document.getElementById('razao').value = data.emit.substring(0, 50); 
+                    document.getElementById('nfVenda').value = data.nNF;
+                    document.getElementById('nfRemessa').value = ""; 
+                    
+                    const emitUpper = data.emit.toUpperCase();
+                    const sel = document.getElementById('fabrica');
+                    for(let i=0; i<sel.options.length; i++){
+                        if(emitUpper.includes(sel.options[i].value) && sel.options[i].value !== ""){ sel.selectedIndex = i; break; }
+                    }
+
+                    currentCloudXMLData = data;
+                    document.getElementById('xmlLinkedBanner').classList.remove('hidden');
+                    document.getElementById('xmlItemCount').innerText = data.itens.length;
+                    atualizarPreview();
+                } else { alert("XML Inválido"); }
+            };
+            reader.readAsText(files[0]);
+        }
+
+        function showLoadingBtn() { 
+            const btn = document.getElementById('btnEnviarNF');
+            btn.disabled = true; btn.querySelector('.dots').classList.add('active'); 
+            btn.querySelector('.btn-text').innerText = "Enviando...";
+        }
+        function hideLoadingBtn() { 
+            const btn = document.getElementById('btnEnviarNF');
+            btn.disabled = false; btn.querySelector('.dots').classList.remove('active'); 
+            btn.querySelector('.btn-text').innerText = "Enviar Nota Fiscal";
+        }
+
+        function atualizarPreview() {
+            const r = document.getElementById('razao').value;
+            const v = document.getElementById('nfVenda').value;
+            const rem = document.getElementById('nfRemessa').value;
+            document.getElementById('previewTextoCobertura').textContent = 
+                `segue NF de cobertura referente a NF (Nº NF Venda: ${v || '...'}) - (Razão Social: ${r || '...'}) NF de remessa (Nº NF Remessa (Fornecedor): ${rem || '...'})`;
+        }
+        ['razao', 'nfVenda', 'nfRemessa'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', atualizarPreview);
+        });
+
+        async function enviarNF(){
+            const razao = document.getElementById('razao').value.trim();
+            const nfVenda = document.getElementById('nfVenda').value.trim();
+            const nfRemessa = document.getElementById('nfRemessa').value.trim();
+            const nfCobertura = document.getElementById('nfCobertura').value.trim();
+            const fabrica = document.getElementById('fabrica').value;
+            let observacao = document.getElementById('observacao').value.trim();
+            const arquivo = document.getElementById('arquivo').files[0];
+
+            if(!fabrica || !arquivo){ alert('Preencha Fábrica e Arquivo PDF.'); return; }
+
+            if(currentCloudXMLData) {
+                const xmlSummary = JSON.stringify({
+                    emit: currentCloudXMLData.emit,
+                    cnpj: currentCloudXMLData.cnpjEmit,
+                    vNF: currentCloudXMLData.vNF,
+                    itens: currentCloudXMLData.itens.map(i => ({
+                        c: i.codigo, d: i.desc, q: i.qtd, u: i.un,
+                        v: i.vTotal, vu: i.vUnit 
+                    }))
+                });
+                observacao += `|||XMLDATA:${xmlSummary}`;
+            }
+
+            showLoadingBtn();
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const payload = { razao, nfVenda, nfRemessa, nfCobertura, fabrica, observacao, pdfBase64: reader.result, pdfName: arquivo.name };
+                try {
+                    const res = await fetch(webAppURL, { method:'POST', body: JSON.stringify(payload)});
+                    const result = await res.json();
+                    if(result.status === 'success'){
+                        mostrarFeedback('NF Enviada para Cloud!');
+                        document.getElementById('nfForm').reset();
+                        document.getElementById('xmlLinkedBanner').classList.add('hidden');
+                        currentCloudXMLData = null; 
+                        atualizarPreview();
+                    } else { alert('Erro no script Google.'); }
+                } catch(e) { alert('Erro de conexão.'); } 
+                finally { hideLoadingBtn(); }
+            };
+            reader.readAsDataURL(arquivo);
+        }
+
+        async function carregarNFs(){
+            const tbody = document.querySelector('#nfTable tbody');
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-8"><i class="fas fa-spinner fa-spin text-indigo-500 text-2xl"></i><br><span class="text-xs text-slate-400 mt-2 block">Sincronizando dados...</span></td></tr>';
+            try {
+                const res = await fetch(webAppURL + '?action=get');
+                allData = await res.json();
+                if(!Array.isArray(allData)) allData = [];
+                allData.sort((a,b)=> (new Date(b.dataHora||0) - new Date(a.dataHora||0)));
+                aplicarFiltroPesquisa();
+            } catch(e) { 
+                console.error(e); tbody.innerHTML = '<tr><td colspan="10" class="text-center text-red-500 py-4">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        // --- NOVA LÓGICA DE GRÁFICOS E FILTROS ---
+        
+        // Extrai valor monetário (vNF) do JSON escondido na observação
+        function extractValueFromObs(obs) {
+            if (!obs || !obs.includes('|||XMLDATA:')) return 0;
+            try {
+                const parts = obs.split('|||XMLDATA:');
+                const jsonStr = parts[1];
+                const data = JSON.parse(jsonStr);
+                return Number(data.vNF) || 0;
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        function aplicarFiltroPesquisa(){
+            const filtro = document.getElementById('filtroFabrica').value;
+            const termo = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            // Novos Filtros de Data
+            const dtStartVal = document.getElementById('dateStart').value;
+            const dtEndVal = document.getElementById('dateEnd').value;
+            const dtStart = dtStartVal ? new Date(dtStartVal) : null;
+            const dtEnd = dtEndVal ? new Date(dtEndVal) : null;
+            
+            // Ajuste para pegar o dia final completo (até 23:59:59)
+            if(dtEnd) dtEnd.setHours(23,59,59,999);
+
+            workingData = allData.filter(r => {
+                // Filtro Fabrica
+                if(filtro && String(r.fabrica) !== filtro) return false;
+                
+                // Filtro Data
+                if (r.dataHora) {
+                    const rDate = new Date(r.dataHora);
+                    if (dtStart && rDate < dtStart) return false;
+                    if (dtEnd && rDate > dtEnd) return false;
+                }
+
+                // Filtro Texto
+                if(!termo) return true;
+                const combined = (String(r.razao)+String(r.nfVenda)+String(r.nfCobertura)+String(r.observacao)).toLowerCase();
+                return combined.includes(termo);
+            });
+
+            // Atualiza KPIs (Cards Coloridos)
+            let totalVal = 0;
+            let totalQtd = workingData.length;
+            
+            workingData.forEach(r => {
+                totalVal += extractValueFromObs(r.observacao);
+            });
+
+            document.getElementById('dashTotalValor').innerText = fmt(totalVal);
+            document.getElementById('dashTotalQtd').innerText = totalQtd;
+            document.getElementById('dashTicketMedio').innerText = totalQtd > 0 ? fmt(totalVal / totalQtd) : 'R$ 0,00';
+
+            currentPage = 1; 
+            renderCloudTable(); 
+            updateCharts(); // Chama a função que desenha os 3 gráficos
+        }
+
+        function updateCharts() {
+            // Configurações de cores baseadas no tema
+            const isDark = document.querySelector('html').classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#64748b';
+            const gridColor = isDark ? '#334155' : '#f1f5f9';
+
+            // Preparação dos dados
+            const statsQtd = {};
+            const statsVal = {};
+            const timeline = {};
+
+            workingData.forEach(d => {
+                const fab = d.fabrica || 'Outros';
+                const val = extractValueFromObs(d.observacao);
+                
+                // Agrega Qtd e Valor por Fábrica
+                statsQtd[fab] = (statsQtd[fab] || 0) + 1;
+                statsVal[fab] = (statsVal[fab] || 0) + val;
+
+                // Agrega Timeline (Data -> Valor)
+                if(d.dataHora) {
+                    const isoDate = new Date(d.dataHora).toISOString().split('T')[0]; // YYYY-MM-DD
+                    timeline[isoDate] = (timeline[isoDate] || 0) + val;
+                }
+            });
+
+            // --- GRÁFICO 1: Valor por Fábrica (Barra Horizontal) ---
+            createOrUpdateChart('chartValorFabrica', 'bar', {
+                labels: Object.keys(statsVal),
+                datasets: [{
+                    label: 'Valor Total (R$)',
+                    data: Object.values(statsVal),
+                    backgroundColor: ['#10b981cc', '#3b82f6cc', '#6366f1cc', '#8b5cf6cc', '#ec4899cc'],
+                    borderRadius: 4,
+                    indexAxis: 'y' // Torna horizontal
+                }]
+            }, {
+                indexAxis: 'y',
+                scales: { 
+                    x: { ticks: { color: textColor, callback: (v) => 'R$ ' + v/1000 + 'k' }, grid: { color: gridColor } }, 
+                    y: { ticks: { color: textColor }, grid: { display:false } } 
+                }
+            });
+
+            // --- GRÁFICO 2: Quantidade por Fábrica (Rosca) ---
+            createOrUpdateChart('chartQtdFabrica', 'doughnut', {
+                labels: Object.keys(statsQtd),
+                datasets: [{
+                    label: 'Qtd Notas',
+                    data: Object.values(statsQtd),
+                    backgroundColor: ['#3b82f6cc', '#10b981cc', '#f59e0bcc', '#ef4444cc', '#6366f1cc'],
+                    borderColor: isDark ? '#1e293b' : '#ffffff',
+                    borderWidth: 2
+                }]
+            }, {
+                cutout: '60%',
+                plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12 } } },
+                scales: { x: { display: false }, y: { display: false } }
+            });
+
+            // --- GRÁFICO 3: Timeline (Linha) ---
+            const sortedDates = Object.keys(timeline).sort();
+            const dataTimeline = sortedDates.map(d => timeline[d]);
+            const labelsTimeline = sortedDates.map(d => {
+                const parts = d.split('-'); return `${parts[2]}/${parts[1]}`; // DD/MM
+            });
+
+            createOrUpdateChart('chartTimeline', 'line', {
+                labels: labelsTimeline,
+                datasets: [{
+                    label: 'Evolução Valor (R$)',
+                    data: dataTimeline,
+                    borderColor: '#6366f1',
+                    backgroundColor: '#6366f120',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            }, {
+                scales: { 
+                    x: { ticks: { color: textColor, maxTicksLimit: 10 }, grid: { display: false } }, 
+                    y: { ticks: { color: textColor }, grid: { color: gridColor } } 
+                }
+            });
+        }
+
+        // Função genérica para criar/atualizar gráficos sem erros de canvas
+        function createOrUpdateChart(canvasId, type, data, extraOptions = {}) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            if (chartsInstance[canvasId]) {
+                chartsInstance[canvasId].destroy();
+            }
+
+            const defaultOptions = {
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
+            };
+
+            const options = { ...defaultOptions, ...extraOptions };
+            if(extraOptions.plugins) options.plugins = { ...defaultOptions.plugins, ...extraOptions.plugins };
+            if(extraOptions.scales) options.scales = extraOptions.scales;
+
+            chartsInstance[canvasId] = new Chart(ctx, { type, data, options });
+        }
+
+        // Atualiza cores se mudar tema
+        function updateChartTheme() { 
+            if(Object.keys(chartsInstance).length > 0) updateCharts(); 
+        }
+
+        function renderCloudTable(){
+            const tbody = document.querySelector('#nfTable tbody');
+            const totalItems = workingData.length;
+            const totalPages = Math.ceil(totalItems/rowsPerPage) || 1;
+            if(currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage-1)*rowsPerPage;
+            const pageData = workingData.slice(start, start+rowsPerPage);
+
+            tbody.innerHTML = '';
+            if(pageData.length === 0) tbody.innerHTML = '<tr><td colspan="10" class="text-center py-8 text-slate-400 font-medium">Nenhum registro encontrado.</td></tr>';
+            else pageData.forEach(r => {
+                const rawObs = r.observacao || '';
+                const cleanObs = rawObs.split('|||XMLDATA:')[0];
+                const hasXmlData = rawObs.includes('|||XMLDATA:');
+                
+                // --- LOGICA DE EXIBIÇÃO DO RETORNO ---
+                let htmlRetorno = '';
+                if(r.pdfRetorno) {
+                    htmlRetorno = `<a href="${r.pdfRetorno}" target="_blank" class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:text-emerald-700 inline-flex items-center justify-center transition border border-emerald-200/50 dark:border-emerald-900/50" title="Ver Retorno"><i class="fas fa-file-pdf"></i></a>`;
+                } else {
+                    htmlRetorno = `
+                    <label class="cursor-pointer w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600" title="Upload Retorno">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <input type="file" class="hidden" accept="application/pdf" onchange="uploadRetorno('${r.id}', this)">
+                    </label>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs border-l-4 border-l-transparent hover:border-l-indigo-500 transition-all">${r.dataHora ? new Date(r.dataHora).toLocaleDateString() : '-'}</td>
+                    <td contenteditable="true" onblur="updateCloud('${r.id}','razao',this.innerText)" class="px-4 py-4 font-bold text-slate-700 dark:text-slate-300 text-sm focus:bg-indigo-50 dark:focus:bg-indigo-900 focus:outline-none rounded transition">${r.razao||''}</td>
+                    <td contenteditable="true" onblur="updateCloud('${r.id}','nfVenda',this.innerText)" class="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400 focus:bg-indigo-50 dark:focus:bg-indigo-900 focus:outline-none rounded transition">${r.nfVenda||''}</td>
+                    <td contenteditable="true" onblur="updateCloud('${r.id}','nfRemessa',this.innerText)" class="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400 focus:bg-indigo-50 dark:focus:bg-indigo-900 focus:outline-none rounded transition">${r.nfRemessa||''}</td>
+                    <td contenteditable="true" onblur="updateCloud('${r.id}','nfCobertura',this.innerText)" class="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400 focus:bg-indigo-50 dark:focus:bg-indigo-900 focus:outline-none rounded transition">${r.nfCobertura||''}</td>
+                    <td contenteditable="true" onblur="updateCloud('${r.id}','fabrica',this.innerText)" class="px-4 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 focus:bg-indigo-50 dark:focus:bg-indigo-900 focus:outline-none rounded transition">${r.fabrica||''}</td>
+                    <td class="px-4 py-4 text-center">${r.pdfLink ? `<a href="${r.pdfLink}" target="_blank" class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-700 inline-flex items-center justify-center transition border border-red-200/50 dark:border-red-900/50"><i class="fas fa-file-pdf"></i></a>` : '-'}</td>
+                    <td class="px-4 py-4 text-center">${htmlRetorno}</td>
+                    <td title="${cleanObs}" class="px-4 py-4 max-w-[100px] truncate cursor-help text-xs text-slate-400 text-center" onclick="alert('${cleanObs}')">${cleanObs ? '<i class="fas fa-comment-alt"></i>' : '-'}</td>
+                    <td class="px-4 py-4">
+                        <div class="flex gap-1 justify-center">
+                            <button title="Ver Itens e PDF" onclick="openModalCloud('${r.id}')" class="w-7 h-7 rounded bg-indigo-50 dark:bg-indigo-900/30 ${hasXmlData ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-300'} hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"><i class="fas fa-list text-xs"></i></button>
+                            <button title="Email" onclick="enviarEmailCloud('${r.id}')" class="w-7 h-7 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"><i class="fas fa-paper-plane text-xs"></i></button>
+                            <button title="Excluir" onclick="askDeleteCloud('${r.id}')" class="w-7 h-7 rounded bg-red-50 dark:bg-red-900/30 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 transition"><i class="fas fa-times text-xs"></i></button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            document.getElementById('showingInfo').innerText = `${start+1}-${Math.min(start+rowsPerPage, totalItems)} de ${totalItems}`;
+        }
+
+        function uploadRetorno(id, input) {
+            const file = input.files[0];
+            if(!file) return;
+
+            if (file.size > 5 * 1024 * 1024) { 
+                alert('O arquivo é muito grande (Máx 5MB).');
+                return;
+            }
+
+            mostrarFeedback('Enviando Retorno...');
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function(e) {
+                const base64Data = e.target.result.split(',')[1]; 
+
+                const payload = {
+                    action: 'uploadRetorno',
+                    id: id,
+                    fileName: 'RETORNO_' + file.name,
+                    mimeType: file.type,
+                    fileData: base64Data
+                };
+
+                try {
+                    const res = await fetch(webAppURL, { method: 'POST', body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    
+                    if(data.status === 'success'){
+                        mostrarFeedback('Retorno Salvo!');
+                        carregarNFs(); // Atualiza a tabela
+                    } else {
+                        alert('Erro ao salvar: ' + data.message);
+                    }
+                } catch(error) {
+                    console.error(error);
+                    alert('Erro na conexão.');
+                }
+            };
+        }
+
+        function openModalCloud(id) {
+            const r = allData.find(x => String(x.id) === String(id));
+            if(!r) return alert("Erro: Registro não encontrado.");
+            
+            const pdfContainer = document.getElementById('pdfContainer');
+            const pdfFrame = document.getElementById('pdfFrame');
+            const pdfPlaceholder = document.getElementById('pdfPlaceholder');
+            const pdfLinkBtn = document.getElementById('pdfExternalLink');
+
+            if(r.pdfLink) {
+                pdfContainer.classList.remove('hidden'); pdfFrame.classList.remove('hidden'); pdfPlaceholder.classList.add('hidden');
+                pdfFrame.src = r.pdfLink.replace('/view', '/preview'); pdfLinkBtn.href = r.pdfLink;
+            } else {
+                pdfFrame.classList.add('hidden'); pdfPlaceholder.classList.remove('hidden'); pdfLinkBtn.href = "#";
+            }
+
+            const rawObs = r.observacao || '';
+            const footer = document.getElementById('modalFooterActions');
+            footer.innerHTML = ``;
+
+            if(!rawObs.includes('|||XMLDATA:')) {
+                const simpleData = { nNF: r.nfVenda, emit: r.razao, cnpjEmit: '-', dest: 'NFS3', vNF: 0, referencias: [], itens: [] };
+                populateAndShowModal(simpleData);
+                return;
+            }
+
+            try {
+                const splitData = rawObs.split('|||XMLDATA:');
+                const jsonStr = splitData[1];
+                const xmlData = JSON.parse(jsonStr);
+                
+                const modalData = {
+                    nNF: r.nfVenda, emit: xmlData.emit || "Desconhecido", cnpjEmit: xmlData.cnpj || "-", dest: "Armazenado na Base",
+                    vNF: Number(xmlData.vNF) || 0,
+                    referencias: ["Dados recuperados da Base"],
+                    itens: Array.isArray(xmlData.itens) ? xmlData.itens.map(i => ({
+                        codigo: i.c, desc: i.d, qtd: i.q, un: i.u,
+                        vTotal: i.v, 
+                        vUnit: i.vu || 0 
+                    })) : []
+                };
+
+                populateAndShowModal(modalData);
+                footer.innerHTML = `<button onclick="gerarDanfe(currentModalData)" class="text-slate-600 hover:text-slate-800 text-sm font-bold flex items-center bg-slate-100 px-3 py-2 rounded-lg transition border border-slate-300"><i class="fas fa-print mr-2"></i> Visualizar DANFE</button>`;
+
+            } catch(e) { alert("Erro ao ler os dados ocultos do XML."); }
+        }
+
+        function populateAndShowModal(nf) {
+            currentModalData = nf; 
+
+            document.getElementById("modalTitle").innerText = `Nota Fiscal ${nf.nNF}`;
+            document.getElementById("modalEmitente").innerText = nf.emit;
+            document.getElementById("modalCnpjEmit").innerText = nf.cnpjEmit || '-';
+            document.getElementById("modalDestinatario").innerText = nf.dest;
+            
+            const refSec = document.getElementById("refSection");
+            const refList = document.getElementById("refList");
+            if (nf.referencias && nf.referencias.length > 0) {
+                refSec.classList.remove("hidden-force");
+                refList.innerHTML = nf.referencias.map(r => `<li>${r}</li>`).join('');
+            } else { refSec.classList.add("hidden-force"); }
+
+            const tbody = document.getElementById("modalItemsTable");
+            tbody.innerHTML = "";
+            nf.itens.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-4 py-2 font-mono text-xs text-slate-500 dark:text-slate-400">${item.codigo}</td>
+                        <td class="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">${item.desc}</td>
+                        <td class="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
+                            ${item.qtd} <span class="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded ml-1">${item.un || ''}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-400">${fmt(item.vUnit || 0)}</td>
+                        <td class="px-4 py-2 text-right font-bold text-slate-800 dark:text-slate-200">${fmt(item.vTotal)}</td>
+                    </tr>`;
+            });
+            document.getElementById("modalTotalNF").innerText = fmt(nf.vNF);
+            document.getElementById("detailsModal").classList.remove("hidden");
+        }
+
+        function closeModal() { 
+            document.getElementById("detailsModal").classList.add("hidden"); 
+            document.getElementById("pdfFrame").src = "";
+        }
+        function changePage(dir) { currentPage += dir; renderCloudTable(); }
+        function changeRowsPerPage() { rowsPerPage = parseInt(document.getElementById('rowsPerPage').value); currentPage=1; renderCloudTable(); }
+
+        async function updateCloud(id, field, val) { try { await fetch(`${webAppURL}?action=update&id=${id}&${field}=${encodeURIComponent(val)}`); } catch(e){} }
+        function askDeleteCloud(id) { deleteIdCloud = id; document.getElementById('deleteModalCloud').classList.remove('hidden'); }
+        document.getElementById('confirmDeleteCloud').onclick = async () => {
+            if(!deleteIdCloud) return;
+            document.getElementById('deleteModalCloud').classList.add('hidden');
+            await fetch(`${webAppURL}?action=delete&id=${deleteIdCloud}`);
+            mostrarFeedback('Registro excluído'); carregarNFs();
+        };
+
+        async function enviarEmailCloud(id) {
+            const r = allData.find(x => String(x.id) === String(id)); 
+            if (!r) return;
+
+            if (!confirm(`Confirmar envio de e-mail para a nota ${r.nfVenda}?`)) return;
+
+            mostrarFeedback('⏳ Enviando e-mail... aguarde.');
+            document.body.style.cursor = 'wait';
+
+            try {
+                const resEmail = await fetch(`${webAppURL}?action=getEmails&fabrica=${encodeURIComponent(r.fabrica)}`);
+                const config = await resEmail.json();
+
+                if (!config || !config.emailPara) {
+                    document.body.style.cursor = 'default';
+                    return alert('ERRO: Nenhum e-mail configurado para a fábrica ' + r.fabrica + '.');
+                }
+
+                const subject = `Nota Cobertura: ${r.nfVenda}/${r.nfRemessa} - ${r.razao}`;
+                const body = `Olá,\n\nSegue nota de cobertura cadastrada no sistema.\n\nFornecedor: ${r.razao}\nNF Venda: ${r.nfVenda}\nNF Remessa: ${r.nfRemessa}\nFábrica Destino: ${r.fabrica}\n\nLink PDF: ${r.pdfLink}\n\nAtt,\nSistema Integra NFe`;
+
+                const payload = {
+                    action: 'sendEmail',
+                    to: config.emailPara,
+                    cc: config.emailCc || '', 
+                    subject: subject,
+                    body: body
+                };
+
+                const sendRes = await fetch(webAppURL, { method: 'POST', body: JSON.stringify(payload) });
+                const sendResult = await sendRes.json();
+
+                document.body.style.cursor = 'default';
+
+                if(sendResult.status === 'success'){
+                    mostrarFeedback('✅ E-mail enviado com sucesso!');
+                } else {
+                    alert('Erro ao enviar: ' + (sendResult.message || 'Erro desconhecido.'));
+                }
+
+            } catch (e) {
+                document.body.style.cursor = 'default';
+                console.error(e);
+                alert('Erro de conexão: ' + e.message);
+            }
+        }
+
+        async function carregarEmails() {
+            const tbody = document.querySelector('#emailsTable tbody');
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+            try {
+                const res = await fetch(webAppURL + '?action=getEmailsAll');
+                const data = await res.json();
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-slate-400 p-4">Nenhum email configurado.</td></tr>';
+                    return;
+                }
+                data.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr class="border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <td class="p-4 font-bold text-indigo-900 dark:text-indigo-400">${d.fabrica}</td>
+                            <td class="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 break-all">${d.emailPara}</td>
+                            <td class="p-4 font-mono text-xs text-slate-400 dark:text-slate-500 break-all">${d.emailCc || '-'}</td>
+                        </tr>`;
+                });
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-red-400 p-4">Erro ao carregar lista.</td></tr>';
+            }
+        }
+
+        async function salvarEmails() {
+            const f = document.getElementById('emailFabrica').value;
+            const e = document.getElementById('emailPara').value;
+            const cc = document.getElementById('emailCc').value; 
+            const btn = document.getElementById('btnSaveEmail');
+
+            if (!f || !e) return alert('Por favor, preencha a Fábrica e o Destinatário (Para).');
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btn.disabled = true;
+
+            try {
+                await fetch(webAppURL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'saveEmails', fabrica: f, emailPara: e, emailCc: cc })
+                });
+                mostrarFeedback('Configuração salva com sucesso!');
+                document.getElementById('emailsForm').reset();
+                carregarEmails();
+            } catch(err) {
+                alert('Erro ao salvar: ' + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme(); initMasks(); initXMLModule(); switchModule('xml-import');
+        });
+    </script>
+</body>
+</html>
