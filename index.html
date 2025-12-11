@@ -138,7 +138,7 @@
             <button onclick="toggleDarkMode()" class="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2 mb-3 hover:bg-slate-200 dark:hover:bg-slate-600">
                 <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:inline text-amber-400"></i> <span id="themeText">Modo Escuro</span>
             </button>
-            <div class="text-[10px] text-slate-400 text-center font-mono">v5.2 (João Lucas - Aprendiz)</div>
+            <div class="text-[10px] text-slate-400 text-center font-mono">v5.3 (Integra + Cloud XML)</div>
         </div>
     </aside>
 
@@ -565,9 +565,10 @@
         /* =========================================
            CORE E UTILITÁRIOS
            ========================================= */
-        const webAppURL = "https://script.google.com/macros/s/AKfycbxsBSC9KO-PZqHxdE9000lnN0JSiV-vK6vUwSpqoITWeJEPEudjPtQPTMa7Gm2MRdW3/exec";
+        const webAppURL = "https://script.google.com/macros/s/AKfycbzoORWWJeFT4mFUHKBtv0-1jgTjPsrV1By9tu5GoYgMUSNsyjW4SP3Tb0m1Kb7yReU/exec";
         
         let currentCloudXMLData = null; 
+        let currentXmlFile = null; // Variável para armazenar o arquivo XML físico
         let myChart = null; 
         let currentModalData = null; 
         let chartsInstance = {}; // Gerencia múltiplas instâncias de gráficos
@@ -950,6 +951,11 @@
 
         function autofillFromXML(files) {
             if(files.length === 0) return;
+            
+            // --- MODIFICAÇÃO: Salva o arquivo XML para envio posterior ---
+            currentXmlFile = files[0]; 
+            // -----------------------------------------------------------
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = parseNFeData(e.target.result);
@@ -995,6 +1001,7 @@
             document.getElementById(id)?.addEventListener('input', atualizarPreview);
         });
 
+        // --- FUNÇÃO MODIFICADA PARA ENVIAR XML JUNTO COM O PDF ---
         async function enviarNF(){
             const razao = document.getElementById('razao').value.trim();
             const nfVenda = document.getElementById('nfVenda').value.trim();
@@ -1002,10 +1009,11 @@
             const nfCobertura = document.getElementById('nfCobertura').value.trim();
             const fabrica = document.getElementById('fabrica').value;
             let observacao = document.getElementById('observacao').value.trim();
-            const arquivo = document.getElementById('arquivo').files[0];
+            const arquivoPdf = document.getElementById('arquivo').files[0];
 
-            if(!fabrica || !arquivo){ alert('Preencha Fábrica e Arquivo PDF.'); return; }
+            if(!fabrica || !arquivoPdf){ alert('Preencha Fábrica e Arquivo PDF.'); return; }
 
+            // Mantém a lógica de enviar dados JSON dentro da observação para os gráficos funcionarem
             if(currentCloudXMLData) {
                 const xmlSummary = JSON.stringify({
                     emit: currentCloudXMLData.emit,
@@ -1020,24 +1028,65 @@
             }
 
             showLoadingBtn();
-            const reader = new FileReader();
-            reader.onload = async () => {
-                const payload = { razao, nfVenda, nfRemessa, nfCobertura, fabrica, observacao, pdfBase64: reader.result, pdfName: arquivo.name };
-                try {
-                    const res = await fetch(webAppURL, { method:'POST', body: JSON.stringify(payload)});
-                    const result = await res.json();
-                    if(result.status === 'success'){
-                        mostrarFeedback('NF Enviada para Cloud!');
-                        document.getElementById('nfForm').reset();
-                        document.getElementById('xmlLinkedBanner').classList.add('hidden');
-                        currentCloudXMLData = null; 
-                        atualizarPreview();
-                    } else { alert('Erro no script Google.'); }
-                } catch(e) { alert('Erro de conexão.'); } 
-                finally { hideLoadingBtn(); }
+
+            // Função auxiliar para ler arquivos como Base64
+            const readFileAsBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
             };
-            reader.readAsDataURL(arquivo);
+
+            try {
+                // Prepara as leituras (PDF é obrigatório, XML é opcional mas estará presente se foi usado o autofill)
+                const leituras = [readFileAsBase64(arquivoPdf)];
+                
+                // Se tiver XML carregado na variável global, lê ele também
+                if(currentXmlFile) {
+                    leituras.push(readFileAsBase64(currentXmlFile));
+                }
+
+                // Aguarda ler todos os arquivos
+                const resultados = await Promise.all(leituras);
+                const pdfBase64 = resultados[0];
+                // O segundo resultado, se existir, é o XML
+                const xmlBase64 = resultados.length > 1 ? resultados[1] : null;
+                const xmlName = currentXmlFile ? currentXmlFile.name : null;
+
+                const payload = { 
+                    razao, nfVenda, nfRemessa, nfCobertura, 
+                    fabrica, observacao, 
+                    pdfBase64: pdfBase64, 
+                    pdfName: arquivoPdf.name,
+                    // Novos campos para o XML
+                    xmlBase64: xmlBase64,
+                    xmlName: xmlName
+                };
+
+                const res = await fetch(webAppURL, { method:'POST', body: JSON.stringify(payload)});
+                const result = await res.json();
+                
+                if(result.status === 'success'){
+                    mostrarFeedback('NF e XML Enviados para Cloud!');
+                    document.getElementById('nfForm').reset();
+                    document.getElementById('xmlLinkedBanner').classList.add('hidden');
+                    currentCloudXMLData = null; 
+                    currentXmlFile = null; // Limpa a variável do arquivo XML
+                    atualizarPreview();
+                } else { 
+                    alert('Erro no script Google: ' + (result.message || 'Desconhecido')); 
+                }
+
+            } catch(e) { 
+                console.error(e);
+                alert('Erro ao processar arquivos ou conexão.'); 
+            } finally { 
+                hideLoadingBtn(); 
+            }
         }
+        // -------------------------------------------------------------
 
         async function carregarNFs(){
             const tbody = document.querySelector('#nfTable tbody');
@@ -1255,6 +1304,12 @@
                     </label>`;
                 }
 
+                // --- LOGICA PARA DOWNLOAD DO XML NA TABELA (NOVO) ---
+                let htmlXmlLink = '';
+                if(r.xmlLink) {
+                   htmlXmlLink = `<a href="${r.xmlLink}" target="_blank" class="w-7 h-7 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition flex items-center justify-center" title="Baixar XML Salvo"><i class="fas fa-code text-xs"></i></a>`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="px-4 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs border-l-4 border-l-transparent hover:border-l-indigo-500 transition-all">${r.dataHora ? new Date(r.dataHora).toLocaleDateString() : '-'}</td>
@@ -1269,6 +1324,7 @@
                     <td class="px-4 py-4">
                         <div class="flex gap-1 justify-center">
                             <button title="Ver Itens e PDF" onclick="openModalCloud('${r.id}')" class="w-7 h-7 rounded bg-indigo-50 dark:bg-indigo-900/30 ${hasXmlData ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-300'} hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"><i class="fas fa-list text-xs"></i></button>
+                            ${htmlXmlLink}
                             <button title="Email" onclick="enviarEmailCloud('${r.id}')" class="w-7 h-7 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"><i class="fas fa-paper-plane text-xs"></i></button>
                             <button title="Excluir" onclick="askDeleteCloud('${r.id}')" class="w-7 h-7 rounded bg-red-50 dark:bg-red-900/30 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 transition"><i class="fas fa-times text-xs"></i></button>
                         </div>
