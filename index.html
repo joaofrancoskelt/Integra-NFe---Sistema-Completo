@@ -138,7 +138,7 @@
             <button onclick="toggleDarkMode()" class="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2 mb-3 hover:bg-slate-200 dark:hover:bg-slate-600">
                 <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:inline text-amber-400"></i> <span id="themeText">Modo Escuro</span>
             </button>
-            <div class="text-[10px] text-slate-400 text-center font-mono">v5.3 (Integra + Cloud XML)</div>
+            <div class="text-[10px] text-slate-400 text-center font-mono">v5.4 (Integra + Cloud Multi-Return)</div>
         </div>
     </aside>
 
@@ -246,6 +246,7 @@
                                     <option value="DECOR">DECOR</option>
                                     <option value="AERCAMP">AERCAMP</option>
                                     <option value="LETS CARGO">LETS CARGO</option>
+				    <option value="MUNDIAL">MUNDIAL</option> </select>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"><i class="fas fa-chevron-down text-xs"></i></div>
                             </div>
@@ -263,7 +264,7 @@
                             <input type="text" id="nfCobertura" class="modern-input font-mono numeric-input">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Arquivo PDF</label>
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Arquivo PDF Principal</label>
                             <input type="file" id="arquivo" accept="application/pdf" required class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-600 dark:file:text-indigo-400 hover:file:bg-indigo-100 transition cursor-pointer">
                         </div>
                     </div>
@@ -320,6 +321,7 @@
                             <option value="DECOR">DECOR</option>
                             <option value="AERCAMP">AERCAMP</option>
                             <option value="LETS CARGO">LETS CARGO</option>
+			    <option value="MUNDIAL">MUNDIAL</option> </select>
                         </select>
                     </div>
                     <div class="flex-[2] min-w-[200px]">
@@ -383,7 +385,7 @@
                                 <th>NF Cobertura</th>
                                 <th>Fábrica</th>
                                 <th class="text-center">Original</th>
-                                <th class="text-center">Retorno</th> <th class="text-center">Obs</th>
+                                <th class="text-center">Retorno (Slots)</th> <th class="text-center">Obs</th>
                                 <th class="text-center">Ações</th>
                             </tr>
                         </thead>
@@ -563,15 +565,15 @@
 
     <script>
         /* =========================================
-           CORE E UTILITÁRIOS
-           ========================================= */
-        const webAppURL = "https://script.google.com/macros/s/AKfycbzoORWWJeFT4mFUHKBtv0-1jgTjPsrV1By9tu5GoYgMUSNsyjW4SP3Tb0m1Kb7yReU/exec";
+            CORE E UTILITÁRIOS
+            ========================================= */
+        const webAppURL = "https://script.google.com/macros/s/AKfycbyRxnJrySs3VfLItnP3Iazhnm5yorMdRpjPsd1W2am13fg42gmLXW0NqxJhO1aULdSOSg/exec";
         
         let currentCloudXMLData = null; 
-        let currentXmlFile = null; // Variável para armazenar o arquivo XML físico
+        let currentXmlFile = null; 
         let myChart = null; 
         let currentModalData = null; 
-        let chartsInstance = {}; // Gerencia múltiplas instâncias de gráficos
+        let chartsInstance = {}; 
 
         /* --- LOGIN LOGIC --- */
         async function handleLogin(e) {
@@ -658,8 +660,8 @@
         }
 
         /* =========================================
-           PARSER XML 
-           ========================================= */
+            PARSER XML 
+            ========================================= */
         function extractSpecialCode(text) {
             if (!text) return null;
             const regex = /\b(EMB|MKT)[-.\w]*\b/gi;
@@ -770,8 +772,8 @@
         }
 
         /* =========================================
-           GERADOR DE DANFE VISUAL
-           ========================================= */
+            GERADOR DE DANFE VISUAL
+            ========================================= */
         function gerarDanfe(nfData) {
             if(!nfData) return alert("Dados indisponíveis para gerar DANFE.");
 
@@ -857,8 +859,8 @@
         }
 
         /* =========================================
-           MÓDULO 1: IMPORTADOR XML LOCAL
-           ========================================= */
+            MÓDULO 1: IMPORTADOR XML LOCAL
+            ========================================= */
         let localInvoices = [];
 
         function initXMLModule() {
@@ -943,8 +945,8 @@
 
 
         /* =========================================
-           MÓDULO 2 & 3: CLOUD & EMAIL LOGIC
-           ========================================= */
+            MÓDULO 2 & 3: CLOUD & EMAIL LOGIC
+            ========================================= */
         let allData = [], workingData = [];
         let currentPage = 1, rowsPerPage = 10;
         let deleteIdCloud = null;
@@ -995,13 +997,13 @@
             const v = document.getElementById('nfVenda').value;
             const rem = document.getElementById('nfRemessa').value;
             document.getElementById('previewTextoCobertura').textContent = 
-                `segue NF de cobertura referente a NF (Nº NF Venda: ${v || '...'}) - (Razão Social: ${r || '...'}) NF de remessa (Nº NF Remessa (Fornecedor): ${rem || '...'})`;
+                `segue NF de armazenagem referente a NF (Nº NF: ${v || '...'}) - (Razão Social: ${r || '...'}) NF de remessa (Nº NF Remessa (Fornecedor): ${rem || '...'})`;
         }
         ['razao', 'nfVenda', 'nfRemessa'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', atualizarPreview);
         });
 
-        // --- FUNÇÃO MODIFICADA PARA ENVIAR XML JUNTO COM O PDF ---
+        // --- FUNÇÃO MODIFICADA PARA ENVIAR XML E RETORNOS ---
         async function enviarNF(){
             const razao = document.getElementById('razao').value.trim();
             const nfVenda = document.getElementById('nfVenda').value.trim();
@@ -1011,9 +1013,9 @@
             let observacao = document.getElementById('observacao').value.trim();
             const arquivoPdf = document.getElementById('arquivo').files[0];
 
-            if(!fabrica || !arquivoPdf){ alert('Preencha Fábrica e Arquivo PDF.'); return; }
+            if(!fabrica || !arquivoPdf){ alert('Preencha Fábrica e Arquivo PDF Principal.'); return; }
 
-            // Mantém a lógica de enviar dados JSON dentro da observação para os gráficos funcionarem
+            // Mantém a lógica de enviar dados JSON dentro da observação
             if(currentCloudXMLData) {
                 const xmlSummary = JSON.stringify({
                     emit: currentCloudXMLData.emit,
@@ -1040,40 +1042,51 @@
             };
 
             try {
-                // Prepara as leituras (PDF é obrigatório, XML é opcional mas estará presente se foi usado o autofill)
-                const leituras = [readFileAsBase64(arquivoPdf)];
-                
-                // Se tiver XML carregado na variável global, lê ele também
-                if(currentXmlFile) {
-                    leituras.push(readFileAsBase64(currentXmlFile));
-                }
+                // Captura arquivos de retorno opcionais
+                const ret1 = document.getElementById('retorno1') ? document.getElementById('retorno1').files[0] : null;
+                const ret2 = document.getElementById('retorno2') ? document.getElementById('retorno2').files[0] : null;
+                const ret3 = document.getElementById('retorno3') ? document.getElementById('retorno3').files[0] : null;
 
-                // Aguarda ler todos os arquivos
+                // Prepara lista de leituras
+                const leituras = [readFileAsBase64(arquivoPdf)];
+                if(currentXmlFile) leituras.push(readFileAsBase64(currentXmlFile));
+                if(ret1) leituras.push(readFileAsBase64(ret1));
+                if(ret2) leituras.push(readFileAsBase64(ret2));
+                if(ret3) leituras.push(readFileAsBase64(ret3));
+                
+                // Aguarda leitura de todos
                 const resultados = await Promise.all(leituras);
-                const pdfBase64 = resultados[0];
-                // O segundo resultado, se existir, é o XML
-                const xmlBase64 = resultados.length > 1 ? resultados[1] : null;
-                const xmlName = currentXmlFile ? currentXmlFile.name : null;
+                
+                // Mapeia os resultados (ordem de inserção é importante)
+                let resultIndex = 0;
+                const pdfBase64 = resultados[resultIndex++];
+                const xmlBase64 = currentXmlFile ? resultados[resultIndex++] : null;
+                const ret1Base64 = ret1 ? resultados[resultIndex++] : null;
+                const ret2Base64 = ret2 ? resultados[resultIndex++] : null;
+                const ret3Base64 = ret3 ? resultados[resultIndex++] : null;
 
                 const payload = { 
                     razao, nfVenda, nfRemessa, nfCobertura, 
                     fabrica, observacao, 
                     pdfBase64: pdfBase64, 
                     pdfName: arquivoPdf.name,
-                    // Novos campos para o XML
                     xmlBase64: xmlBase64,
-                    xmlName: xmlName
+                    xmlName: currentXmlFile ? currentXmlFile.name : null,
+                    // Envia retornos opcionais
+                    retorno1Base64: ret1Base64, retorno1Name: ret1 ? ret1.name : null,
+                    retorno2Base64: ret2Base64, retorno2Name: ret2 ? ret2.name : null,
+                    retorno3Base64: ret3Base64, retorno3Name: ret3 ? ret3.name : null
                 };
 
                 const res = await fetch(webAppURL, { method:'POST', body: JSON.stringify(payload)});
                 const result = await res.json();
                 
                 if(result.status === 'success'){
-                    mostrarFeedback('NF e XML Enviados para Cloud!');
+                    mostrarFeedback('NF Enviada com sucesso!');
                     document.getElementById('nfForm').reset();
                     document.getElementById('xmlLinkedBanner').classList.add('hidden');
                     currentCloudXMLData = null; 
-                    currentXmlFile = null; // Limpa a variável do arquivo XML
+                    currentXmlFile = null; 
                     atualizarPreview();
                 } else { 
                     alert('Erro no script Google: ' + (result.message || 'Desconhecido')); 
@@ -1293,16 +1306,26 @@
                 const hasXmlData = rawObs.includes('|||XMLDATA:');
                 
                 // --- LOGICA DE EXIBIÇÃO DO RETORNO ---
-                let htmlRetorno = '';
-                if(r.pdfRetorno) {
-                    htmlRetorno = `<a href="${r.pdfRetorno}" target="_blank" class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:text-emerald-700 inline-flex items-center justify-center transition border border-emerald-200/50 dark:border-emerald-900/50" title="Ver Retorno"><i class="fas fa-file-pdf"></i></a>`;
-                } else {
-                    htmlRetorno = `
-                    <label class="cursor-pointer w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600" title="Upload Retorno">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <input type="file" class="hidden" accept="application/pdf" onchange="uploadRetorno('${r.id}', this)">
-                    </label>`;
+                let htmlRetorno = '<div class="flex gap-1 justify-center">';
+                
+                // Loop para criar 3 slots de retorno
+                for(let i=1; i<=3; i++) {
+                    const prop = i === 1 ? 'pdfRetorno' : `pdfRetorno${i}`;
+                    const link = r[prop];
+
+                    if(link) {
+                         // Se tem link, mostra ícone PDF
+                         htmlRetorno += `<a href="${link}" target="_blank" class="w-6 h-6 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:text-emerald-700 inline-flex items-center justify-center transition border border-emerald-200/50 dark:border-emerald-900/50 text-[10px]" title="Ver Retorno ${i}"><i class="fas fa-file-pdf"></i><span class="ml-0.5 font-bold">${i}</span></a>`;
+                    } else {
+                         // Se não tem, mostra botão Upload
+                         htmlRetorno += `
+                        <label class="cursor-pointer w-6 h-6 rounded bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600 text-[10px]" title="Upload Retorno ${i}">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <input type="file" class="hidden" accept="application/pdf" onchange="uploadRetorno('${r.id}', this, ${i})">
+                        </label>`;
+                    }
                 }
+                htmlRetorno += '</div>';
 
                 // --- LOGICA PARA DOWNLOAD DO XML NA TABELA (NOVO) ---
                 let htmlXmlLink = '';
@@ -1336,7 +1359,7 @@
             document.getElementById('showingInfo').innerText = `${start+1}-${Math.min(start+rowsPerPage, totalItems)} de ${totalItems}`;
         }
 
-        function uploadRetorno(id, input) {
+        function uploadRetorno(id, input, slot) {
             const file = input.files[0];
             if(!file) return;
 
@@ -1345,7 +1368,7 @@
                 return;
             }
 
-            mostrarFeedback('Enviando Retorno...');
+            mostrarFeedback(`Enviando Retorno (Slot ${slot})...`);
             
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -1355,7 +1378,8 @@
                 const payload = {
                     action: 'uploadRetorno',
                     id: id,
-                    fileName: 'RETORNO_' + file.name,
+                    slot: slot,
+                    fileName: `RETORNO_${slot}_` + file.name,
                     mimeType: file.type,
                     fileData: base64Data
                 };
@@ -1365,7 +1389,7 @@
                     const data = await res.json();
                     
                     if(data.status === 'success'){
-                        mostrarFeedback('Retorno Salvo!');
+                        mostrarFeedback(`Retorno ${slot} Salvo!`);
                         carregarNFs(); // Atualiza a tabela
                     } else {
                         alert('Erro ao salvar: ' + data.message);
@@ -1571,6 +1595,47 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
+        }
+
+        // --- FUNÇÃO DE EXPORTAÇÃO ADICIONADA ---
+        function exportCSV() {
+            if (!workingData || workingData.length === 0) {
+                alert("Sem dados para exportar.");
+                return;
+            }
+
+            const headers = ["Data", "Razão Social", "NF Venda", "NF Remessa", "NF Cobertura", "Fábrica", "Observação", "Link PDF", "Link Retorno 1", "Link Retorno 2", "Link Retorno 3"];
+            const csvRows = [];
+            
+            // Adiciona BOM para UTF-8 (Excel)
+            csvRows.push('\uFEFF' + headers.join(";"));
+
+            for (const row of workingData) {
+                const values = [
+                    row.dataHora ? new Date(row.dataHora).toLocaleDateString() : "",
+                    `"${(row.razao || "").replace(/"/g, '""')}"`,
+                    row.nfVenda || "",
+                    row.nfRemessa || "",
+                    row.nfCobertura || "",
+                    row.fabrica || "",
+                    `"${(row.observacao || "").replace(/\n/g, " ").replace(/"/g, '""')}"`,
+                    row.pdfLink || "",
+                    row.pdfRetorno || "",
+                    row.pdfRetorno2 || "",
+                    row.pdfRetorno3 || ""
+                ];
+                csvRows.push(values.join(";"));
+            }
+
+            const csvString = csvRows.join("\n");
+            const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `exportacao_nf_integra_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
