@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Integra NFe - Sistema Completo</title>
-      <link rel="icon" type="image/png" href="https://www.melhorcomprar.com.br/images/lojas/cupom-desconto-skelt.webp">
+    <link rel="icon" type="image/png" href="https://www.melhorcomprar.com.br/images/lojas/cupom-desconto-skelt.webp">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
         tailwind.config = {
@@ -72,6 +74,16 @@
 
         /* Login */
         #loginScreen { background-image: radial-gradient(at 50% 50%, hsla(253,16%,7%,1) 0, #0f172a 100%); }
+
+        /* --- ESTILOS TRANSPORTES (TORRE CONTROLE) --- */
+        .transp-glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .dark .transp-glass-card { background: rgba(30, 41, 59, 0.9); border-color: rgba(71, 85, 105, 0.8); }
+        .transp-table-container { max-height: calc(100vh - 350px); overflow: auto; border-radius: 12px; }
+        .transp-tab-content { display: none; animation: slideUp 0.4s ease-out; }
+        .transp-tab-content.active { display: block; }
+        .transp-loader { border: 2px solid #e2e8f0; border-top: 2px solid #2563eb; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; display: none; }
+        .transp-expand-btn { transition: transform 0.2s; }
+        .expanded .transp-expand-btn { transform: rotate(180deg); }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex h-screen selection:bg-indigo-100 selection:text-indigo-700 overflow-hidden">
@@ -120,7 +132,7 @@
                 <i class="fas fa-file-invoice w-5 text-center transition-colors"></i> <span class="relative z-10">Análise XML</span>
             </button>
 
-            <div class="px-4 mb-2 mt-8">
+            <div class="px-4 mb-2 mt-6">
                 <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nuvem (Cloud)</span>
             </div>
             <button onclick="switchModule('cloud-form')" id="nav-form" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
@@ -132,13 +144,20 @@
             <button onclick="switchModule('cloud-email')" id="nav-email" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
                 <i class="fas fa-envelope-open-text w-5 text-center"></i> Config. Emails
             </button>
+
+            <div class="px-4 mb-2 mt-6">
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operação Logística</span>
+            </div>
+            <button onclick="switchModule('transportes')" id="nav-transportes" class="w-full text-left py-3 px-4 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-3 text-sm font-medium">
+                <i class="fas fa-truck-fast w-5 text-center"></i> Transportes / Torre
+            </button>
         </nav>
 
         <div class="p-4 border-t border-slate-100 dark:border-slate-700">
             <button onclick="toggleDarkMode()" class="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2 mb-3 hover:bg-slate-200 dark:hover:bg-slate-600">
                 <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:inline text-amber-400"></i> <span id="themeText">Modo Escuro</span>
             </button>
-            <div class="text-[10px] text-slate-400 text-center font-mono">v5.4 (Integra + Cloud Multi-Return)</div>
+            <div class="text-[10px] text-slate-400 text-center font-mono">v5.5 (Integra + Transportes)</div>
         </div>
     </aside>
 
@@ -210,7 +229,6 @@
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Cadastro de Cobertura</h2>
             </header>
             <main class="p-8 overflow-y-auto flex-1 max-w-5xl mx-auto w-full">
-                
                 <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-indigo-500/20 flex flex-col md:flex-row items-center justify-between gap-4 border border-black/10">
                     <div class="flex items-center gap-4">
                         <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm"><i class="fas fa-magic text-xl"></i></div>
@@ -246,7 +264,7 @@
                                     <option value="DECOR">DECOR</option>
                                     <option value="AERCAMP">AERCAMP</option>
                                     <option value="LETS CARGO">LETS CARGO</option>
-				    <option value="MUNDIAL">MUNDIAL</option> </select>
+                                    <option value="MUNDIAL">MUNDIAL</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"><i class="fas fa-chevron-down text-xs"></i></div>
                             </div>
@@ -321,7 +339,7 @@
                             <option value="DECOR">DECOR</option>
                             <option value="AERCAMP">AERCAMP</option>
                             <option value="LETS CARGO">LETS CARGO</option>
-			    <option value="MUNDIAL">MUNDIAL</option> </select>
+                            <option value="MUNDIAL">MUNDIAL</option>
                         </select>
                     </div>
                     <div class="flex-[2] min-w-[200px]">
@@ -363,13 +381,6 @@
                         <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2"><i class="fas fa-chart-bar"></i> Quantidade por Fábrica</h3>
                         <div class="h-64 w-full">
                             <canvas id="chartQtdFabrica"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="col-span-1 lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden transition-colors">
-                        <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2"><i class="fas fa-history"></i> Evolução Diária (Valores)</h3>
-                        <div class="h-64 w-full">
-                            <canvas id="chartTimeline"></canvas>
                         </div>
                     </div>
                 </div>
@@ -469,6 +480,239 @@
                 </div>
             </main>
         </div>
+
+        <div id="module-transportes" class="module-content h-full flex flex-col hidden-module fade-in">
+            <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700 p-6 flex flex-wrap gap-4 justify-between items-center z-10 sticky top-0 transition-colors">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Torre de Controle</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Supply Chain & Operação Logística</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div id="transp-statusMessage" class="hidden md:block text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-full">
+                        Pronto para uso
+                    </div>
+                    
+                    <button onclick="transp_exportarDados('csv')" class="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 px-4 py-2.5 rounded-xl font-semibold transition-all shadow-sm flex items-center gap-2 active:scale-95 text-sm">
+                        <i class="fa-solid fa-file-csv text-emerald-600"></i> <span class="hidden sm:inline">CSV</span>
+                    </button>
+                    <button onclick="transp_exportarDados('xlsx')" class="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 px-4 py-2.5 rounded-xl font-semibold transition-all shadow-sm flex items-center gap-2 active:scale-95 text-sm">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i> <span class="hidden sm:inline">Excel</span>
+                    </button>
+
+                    <button onclick="transp_carregarDados()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95 text-sm border border-black">
+                        <div id="transp-loadingSpinner" class="transp-loader border-white border-t-transparent"></div>
+                        <i class="fa-solid fa-arrows-rotate" id="transp-syncIcon"></i>
+                        <span class="hidden sm:inline">Sincronizar</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-6 overflow-y-auto flex-1">
+                <div class="flex p-1.5 bg-slate-200/50 dark:bg-slate-800 rounded-2xl w-fit mb-8 gap-1 overflow-x-auto border border-slate-300 dark:border-slate-700">
+                    <button onclick="switchTranspTab('supply')" id="btn-transp-supply" class="transp-tab-btn px-6 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center gap-2 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-box-open"></i> Supply Chain
+                    </button>
+                    <button onclick="switchTranspTab('logistica')" id="btn-transp-logistica" class="transp-tab-btn px-6 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-route"></i> Logística & SLA
+                    </button>
+                    <button onclick="switchTranspTab('bi')" id="btn-transp-bi" class="transp-tab-btn px-6 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-chart-pie"></i> Dashboards (BI)
+                    </button>
+                    <button onclick="switchTranspTab('form')" id="btn-transp-form" class="transp-tab-btn px-6 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-circle-plus"></i> Nova Solicitação
+                    </button>
+                </div>
+
+                <div id="transp-tab-supply" class="transp-tab-content active space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="md:col-span-2 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="transp-searchSupply" placeholder="Buscar por código, NF ou transportadora..." 
+                                   class="modern-input pl-11" onkeyup="transp_aplicarFiltrosSupply()">
+                        </div>
+                        <select id="transp-filterTipoProduto" class="modern-input" onchange="transp_aplicarFiltrosSupply()">
+                            <option value="">Todos os Produtos</option>
+                        </select>
+                        <select id="transp-filterCanal" class="modern-input" onchange="transp_aplicarFiltrosSupply()">
+                            <option value="">Todos os Canais</option>
+                        </select>
+                    </div>
+
+                    <div class="transp-glass-card rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none">
+                        <div class="transp-table-container">
+                            <table class="w-full text-left text-[13px]">
+                                <thead id="transp-supplyHead" class="bg-slate-100 dark:bg-slate-800"></thead>
+                                <tbody id="transp-supplyBody" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-900">
+                                    <tr><td colspan="10" class="p-20 text-center text-slate-400"><i class="fa-solid fa-inbox text-4xl mb-2"></i><p>Aguardando sincronização...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="transp-tab-logistica" class="transp-tab-content space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div class="transp-glass-card p-5 rounded-2xl border-l-4 border-emerald-500 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">SLA Dentro do Prazo</p>
+                                <h3 id="transp-kpi-prazo" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                            </div>
+                            <div class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-calendar-check"></i></div>
+                        </div>
+                        <div class="transp-glass-card p-5 rounded-2xl border-l-4 border-rose-500 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Entregas Atrasadas</p>
+                                <h3 id="transp-kpi-atraso" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                            </div>
+                            <div class="bg-rose-50 dark:bg-rose-900/30 text-rose-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        </div>
+                        <div class="transp-glass-card p-5 rounded-2xl border-l-4 border-amber-500 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Em Trânsito / Pendente</p>
+                                <h3 id="transp-kpi-pendente" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                            </div>
+                            <div class="bg-amber-50 dark:bg-amber-900/30 text-amber-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-truck-fast"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="transp-searchLogistica" placeholder="Filtrar logística..." 
+                               class="modern-input" onkeyup="transp_aplicarFiltrosLogistica()">
+                        <select id="transp-filterTransportadora" class="modern-input" onchange="transp_aplicarFiltrosLogistica()"></select>
+                        <select id="transp-filterStatus" class="modern-input" onchange="transp_aplicarFiltrosLogistica()"></select>
+                    </div>
+
+                    <div class="transp-glass-card rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none">
+                        <div class="transp-table-container">
+                            <table class="w-full text-left text-[13px]">
+                                <thead id="transp-logisticaHead" class="bg-slate-100 dark:bg-slate-800"></thead>
+                                <tbody id="transp-logisticaBody" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-900"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="transp-tab-bi" class="transp-tab-content space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div class="transp-glass-card p-5 rounded-2xl flex justify-between items-center border-b-4 border-indigo-500">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Total de Entregas</p>
+                                <h3 id="transp-bi-total-entregas" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                            </div>
+                            <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        </div>
+                        <div class="transp-glass-card p-5 rounded-2xl flex justify-between items-center border-b-4 border-emerald-500">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Eficiência Geral (No Prazo)</p>
+                                <h3 id="transp-bi-eficiencia" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0%</h3>
+                            </div>
+                            <div class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-ranking-star"></i></div>
+                        </div>
+                        <div class="transp-glass-card p-5 rounded-2xl flex justify-between items-center border-b-4 border-sky-500">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase">Transportadoras Ativas</p>
+                                <h3 id="transp-bi-transportadoras" class="text-3xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                            </div>
+                            <div class="bg-sky-50 dark:bg-sky-900/30 text-sky-500 p-3 rounded-xl text-xl"><i class="fa-solid fa-truck-moving"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="transp-glass-card p-5 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none">
+                            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase mb-4 tracking-wide"><i class="fa-solid fa-chart-bar mr-2 text-indigo-500"></i> Volume por Transportadora</h3>
+                            <div id="transp-chart-transportadoras" class="w-full h-80"></div>
+                        </div>
+                        
+                        <div class="transp-glass-card p-5 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none">
+                            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase mb-4 tracking-wide"><i class="fa-solid fa-chart-line mr-2 text-emerald-500"></i> Desempenho Global de SLA</h3>
+                            <div id="transp-chart-sla" class="w-full h-80"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="transp-tab-form" class="transp-tab-content max-w-4xl mx-auto">
+                    <div class="transp-glass-card p-8 rounded-3xl shadow-2xl shadow-slate-200 dark:shadow-none">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-3 rounded-2xl"><i class="fa-solid fa-paper-plane text-xl"></i></div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Nova Solicitação</h2>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Preencha os dados abaixo para gerar um novo pedido de transporte.</p>
+                            </div>
+                        </div>
+
+                        <form id="transp-transporteForm" onsubmit="transp_enviarFormulario(event)" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Solicitante *</label>
+                                    <select id="transp-form-solicitante" class="modern-input" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option>Luiz</option><option>Juliana</option><option>Rafael</option><option>Vitor</option><option>Eduardo</option><option>Joyce</option><option>Rodrigo</option><option>Patricia</option><option>Elizabeth</option><option>Ana</option><option>Maria Julia</option><option>Lucas</option><option>Roberto</option><option>Ester</option><option>João</option><option>Michel</option><option>Roque</option><option>Gabriel Velenzuela</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Empresa Canal *</label>
+                                    <select id="transp-form-empresa" class="modern-input" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option>202-B2B</option><option>202-B2C</option><option>106-B2B</option><option>106-B2C</option><option>203-B2C</option><option>104-B2C</option><option>103-B2B</option><option>502-B2C</option><option>503-B2B</option><option>501-ESCR</option><option>301-FUTURE</option><option>102-LOGISTOCK</option><option>201-LOGISTOCK</option><option>UNA</option><option>QUADRATTA</option><option>101-ESCR</option><option>302-FUTURE</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Ordem de Compra (OC) *</label>
+                                    <input type="number" id="transp-form-oc" class="modern-input" min="1" required>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Tipo de Frete *</label>
+                                    <select id="transp-form-frete" class="modern-input" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option>FRACIONADO</option><option>DEDICADO</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 border-y border-slate-100 dark:border-slate-700">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Tipo de Produto</label>
+                                    <select id="transp-form-produto" class="modern-input">
+                                        <option>PA</option><option>MP</option><option>EMBALAGEM</option><option>TRADE</option><option>TRANSFERENCIA</option><option>VD</option><option>MARKETING</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">Qtd Paletes</label>
+                                    <input type="number" id="transp-form-paletes" class="modern-input" step="0.01">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">NF Fábrica</label>
+                                    <input type="text" id="transp-form-nfFabrica" class="modern-input">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                    <h4 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest"><i class="fa-solid fa-file-arrow-up mr-1"></i> Documentos Remessa</h4>
+                                    <div class="space-y-3">
+                                        <input type="file" id="transp-form-xml" accept=".xml" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 transition" required>
+                                        <input type="file" id="transp-form-pdf" accept=".pdf" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 transition" required>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                    <h4 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest"><i class="fa-solid fa-industry mr-1"></i> Documentos Fábrica</h4>
+                                    <div class="space-y-3">
+                                        <input type="file" id="transp-form-xmlFab" accept=".xml" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-slate-200 dark:file:bg-slate-700 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 transition">
+                                        <input type="file" id="transp-form-pdfFab" accept=".pdf" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-slate-200 dark:file:bg-slate-700 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 transition">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="transp-btn-enviar-form" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-indigo-500/30 flex justify-center items-center gap-3 text-lg active:scale-[0.98] border border-black">
+                                <i class="fa-solid fa-paper-plane"></i> Enviar Solicitação
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
     </div>
 
     <div id="detailsModal" class="fixed inset-0 hidden flex items-center justify-center z-50 p-4 transition-opacity duration-300">
@@ -565,9 +809,9 @@
 
     <script>
         /* =========================================
-            CORE E UTILITÁRIOS
+            CORE E UTILITÁRIOS (INTEGRA NFE)
             ========================================= */
-        const webAppURL = https://script.google.com/macros/s/AKfycby3AVvBD0F86UMaFNtc5bXe5Kf1tDtuLlem7Z1-HOG8K0XVClInwn2h9DJ1AIa-mDg6/exec";
+        const webAppURL = "https://script.google.com/macros/s/AKfycby3AVvBD0F86UMaFNtc5bXe5Kf1tDtuLlem7Z1-HOG8K0XVClInwn2h9DJ1AIa-mDg6/exec";
         
         let currentCloudXMLData = null; 
         let currentXmlFile = null; 
@@ -607,6 +851,7 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             document.getElementById('themeText').innerText = isDark ? "Modo Claro" : "Modo Escuro";
             updateChartTheme();
+            if(window.transp_renderizarBI) window.transp_renderizarBI(); // Atualiza Graficos Torre
         }
         function initTheme() {
             const saved = localStorage.getItem('theme');
@@ -616,16 +861,25 @@
             }
         }
 
-        /* --- NAVIGATION --- */
+        /* --- NAVIGATION PRINCIPAL --- */
         function switchModule(moduleName) {
             document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden-module'));
             const target = document.getElementById('module-' + moduleName);
             if(target) target.classList.remove('hidden-module');
             
-            const buttons = ['xml', 'form', 'view', 'email'];
+            const buttons = ['xml', 'form', 'view', 'email', 'transportes'];
             buttons.forEach(b => {
                 const btn = document.getElementById('nav-' + b);
-                const isActive = 'nav-' + b === 'nav-' + (moduleName.replace('import', 'xml'));
+                if (!btn) return;
+                
+                // Trata a nomeclatura dos botões e IDs de módulo
+                let isActive = false;
+                if (moduleName === 'xml-import' && b === 'xml') isActive = true;
+                else if (moduleName === 'cloud-form' && b === 'form') isActive = true;
+                else if (moduleName === 'cloud-view' && b === 'view') isActive = true;
+                else if (moduleName === 'cloud-email' && b === 'email') isActive = true;
+                else if (moduleName === 'transportes' && b === 'transportes') isActive = true;
+
                 if(isActive) {
                     btn.className = "w-full text-left py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 flex items-center gap-3 text-sm font-bold group border border-black";
                     btn.querySelector('i').classList.remove('text-indigo-500', 'dark:text-indigo-400');
@@ -633,8 +887,12 @@
                     btn.className = "w-full text-left py-3 px-4 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm font-medium group text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400";
                 }
             });
+            
             if(moduleName === 'cloud-view') { carregarNFs(); setTimeout(updateCharts, 100); }
             if(moduleName === 'cloud-email') carregarEmails();
+            if(moduleName === 'transportes') { 
+                if(transpDadosCompletos.length === 0) transp_carregarDados(); 
+            }
         }
 
         function mostrarFeedback(txt) {
@@ -954,9 +1212,7 @@
         function autofillFromXML(files) {
             if(files.length === 0) return;
             
-            // --- MODIFICAÇÃO: Salva o arquivo XML para envio posterior ---
             currentXmlFile = files[0]; 
-            // -----------------------------------------------------------
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1003,7 +1259,6 @@
             document.getElementById(id)?.addEventListener('input', atualizarPreview);
         });
 
-        // --- FUNÇÃO MODIFICADA PARA ENVIAR XML E RETORNOS ---
         async function enviarNF(){
             const razao = document.getElementById('razao').value.trim();
             const nfVenda = document.getElementById('nfVenda').value.trim();
@@ -1015,7 +1270,6 @@
 
             if(!fabrica || !arquivoPdf){ alert('Preencha Fábrica e Arquivo PDF Principal.'); return; }
 
-            // Mantém a lógica de enviar dados JSON dentro da observação
             if(currentCloudXMLData) {
                 const xmlSummary = JSON.stringify({
                     emit: currentCloudXMLData.emit,
@@ -1031,7 +1285,6 @@
 
             showLoadingBtn();
 
-            // Função auxiliar para ler arquivos como Base64
             const readFileAsBase64 = (file) => {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -1042,22 +1295,18 @@
             };
 
             try {
-                // Captura arquivos de retorno opcionais
                 const ret1 = document.getElementById('retorno1') ? document.getElementById('retorno1').files[0] : null;
                 const ret2 = document.getElementById('retorno2') ? document.getElementById('retorno2').files[0] : null;
                 const ret3 = document.getElementById('retorno3') ? document.getElementById('retorno3').files[0] : null;
 
-                // Prepara lista de leituras
                 const leituras = [readFileAsBase64(arquivoPdf)];
                 if(currentXmlFile) leituras.push(readFileAsBase64(currentXmlFile));
                 if(ret1) leituras.push(readFileAsBase64(ret1));
                 if(ret2) leituras.push(readFileAsBase64(ret2));
                 if(ret3) leituras.push(readFileAsBase64(ret3));
                 
-                // Aguarda leitura de todos
                 const resultados = await Promise.all(leituras);
                 
-                // Mapeia os resultados (ordem de inserção é importante)
                 let resultIndex = 0;
                 const pdfBase64 = resultados[resultIndex++];
                 const xmlBase64 = currentXmlFile ? resultados[resultIndex++] : null;
@@ -1072,7 +1321,6 @@
                     pdfName: arquivoPdf.name,
                     xmlBase64: xmlBase64,
                     xmlName: currentXmlFile ? currentXmlFile.name : null,
-                    // Envia retornos opcionais
                     retorno1Base64: ret1Base64, retorno1Name: ret1 ? ret1.name : null,
                     retorno2Base64: ret2Base64, retorno2Name: ret2 ? ret2.name : null,
                     retorno3Base64: ret3Base64, retorno3Name: ret3 ? ret3.name : null
@@ -1099,7 +1347,6 @@
                 hideLoadingBtn(); 
             }
         }
-        // -------------------------------------------------------------
 
         async function carregarNFs(){
             const tbody = document.querySelector('#nfTable tbody');
@@ -1115,9 +1362,6 @@
             }
         }
 
-        // --- NOVA LÓGICA DE GRÁFICOS E FILTROS ---
-        
-        // Extrai valor monetário (vNF) do JSON escondido na observação
         function extractValueFromObs(obs) {
             if (!obs || !obs.includes('|||XMLDATA:')) return 0;
             try {
@@ -1134,33 +1378,27 @@
             const filtro = document.getElementById('filtroFabrica').value;
             const termo = document.getElementById('searchInput').value.toLowerCase().trim();
             
-            // Novos Filtros de Data
             const dtStartVal = document.getElementById('dateStart').value;
             const dtEndVal = document.getElementById('dateEnd').value;
             const dtStart = dtStartVal ? new Date(dtStartVal) : null;
             const dtEnd = dtEndVal ? new Date(dtEndVal) : null;
             
-            // Ajuste para pegar o dia final completo (até 23:59:59)
             if(dtEnd) dtEnd.setHours(23,59,59,999);
 
             workingData = allData.filter(r => {
-                // Filtro Fabrica
                 if(filtro && String(r.fabrica) !== filtro) return false;
                 
-                // Filtro Data
                 if (r.dataHora) {
                     const rDate = new Date(r.dataHora);
                     if (dtStart && rDate < dtStart) return false;
                     if (dtEnd && rDate > dtEnd) return false;
                 }
 
-                // Filtro Texto
                 if(!termo) return true;
                 const combined = (String(r.razao)+String(r.nfVenda)+String(r.nfCobertura)+String(r.observacao)).toLowerCase();
                 return combined.includes(termo);
             });
 
-            // Atualiza KPIs (Cards Coloridos)
             let totalVal = 0;
             let totalQtd = workingData.length;
             
@@ -1174,36 +1412,25 @@
 
             currentPage = 1; 
             renderCloudTable(); 
-            updateCharts(); // Chama a função que desenha os 3 gráficos
+            updateCharts();
         }
 
         function updateCharts() {
-            // Configurações de cores baseadas no tema
             const isDark = document.querySelector('html').classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#64748b';
             const gridColor = isDark ? '#334155' : '#f1f5f9';
 
-            // Preparação dos dados
             const statsQtd = {};
             const statsVal = {};
-            const timeline = {};
 
             workingData.forEach(d => {
                 const fab = d.fabrica || 'Outros';
                 const val = extractValueFromObs(d.observacao);
                 
-                // Agrega Qtd e Valor por Fábrica
                 statsQtd[fab] = (statsQtd[fab] || 0) + 1;
                 statsVal[fab] = (statsVal[fab] || 0) + val;
-
-                // Agrega Timeline (Data -> Valor)
-                if(d.dataHora) {
-                    const isoDate = new Date(d.dataHora).toISOString().split('T')[0]; // YYYY-MM-DD
-                    timeline[isoDate] = (timeline[isoDate] || 0) + val;
-                }
             });
 
-            // --- GRÁFICO 1: Valor por Fábrica (Barra Horizontal) ---
             createOrUpdateChart('chartValorFabrica', 'bar', {
                 labels: Object.keys(statsVal),
                 datasets: [{
@@ -1211,7 +1438,7 @@
                     data: Object.values(statsVal),
                     backgroundColor: ['#10b981cc', '#3b82f6cc', '#6366f1cc', '#8b5cf6cc', '#ec4899cc'],
                     borderRadius: 4,
-                    indexAxis: 'y' // Torna horizontal
+                    indexAxis: 'y'
                 }]
             }, {
                 indexAxis: 'y',
@@ -1221,7 +1448,6 @@
                 }
             });
 
-            // --- GRÁFICO 2: Quantidade por Fábrica (Rosca) ---
             createOrUpdateChart('chartQtdFabrica', 'doughnut', {
                 labels: Object.keys(statsQtd),
                 datasets: [{
@@ -1236,37 +1462,13 @@
                 plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12 } } },
                 scales: { x: { display: false }, y: { display: false } }
             });
-
-            // --- GRÁFICO 3: Timeline (Linha) ---
-            const sortedDates = Object.keys(timeline).sort();
-            const dataTimeline = sortedDates.map(d => timeline[d]);
-            const labelsTimeline = sortedDates.map(d => {
-                const parts = d.split('-'); return `${parts[2]}/${parts[1]}`; // DD/MM
-            });
-
-            createOrUpdateChart('chartTimeline', 'line', {
-                labels: labelsTimeline,
-                datasets: [{
-                    label: 'Evolução Valor (R$)',
-                    data: dataTimeline,
-                    borderColor: '#6366f1',
-                    backgroundColor: '#6366f120',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            }, {
-                scales: { 
-                    x: { ticks: { color: textColor, maxTicksLimit: 10 }, grid: { display: false } }, 
-                    y: { ticks: { color: textColor }, grid: { color: gridColor } } 
-                }
-            });
         }
 
-        // Função genérica para criar/atualizar gráficos sem erros de canvas
         function createOrUpdateChart(canvasId, type, data, extraOptions = {}) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return; 
+            
+            const ctx = canvas.getContext('2d');
             
             if (chartsInstance[canvasId]) {
                 chartsInstance[canvasId].destroy();
@@ -1285,7 +1487,6 @@
             chartsInstance[canvasId] = new Chart(ctx, { type, data, options });
         }
 
-        // Atualiza cores se mudar tema
         function updateChartTheme() { 
             if(Object.keys(chartsInstance).length > 0) updateCharts(); 
         }
@@ -1305,19 +1506,15 @@
                 const cleanObs = rawObs.split('|||XMLDATA:')[0];
                 const hasXmlData = rawObs.includes('|||XMLDATA:');
                 
-                // --- LOGICA DE EXIBIÇÃO DO RETORNO ---
                 let htmlRetorno = '<div class="flex gap-1 justify-center">';
                 
-                // Loop para criar 3 slots de retorno
                 for(let i=1; i<=3; i++) {
                     const prop = i === 1 ? 'pdfRetorno' : `pdfRetorno${i}`;
                     const link = r[prop];
 
                     if(link) {
-                         // Se tem link, mostra ícone PDF
                          htmlRetorno += `<a href="${link}" target="_blank" class="w-6 h-6 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:text-emerald-700 inline-flex items-center justify-center transition border border-emerald-200/50 dark:border-emerald-900/50 text-[10px]" title="Ver Retorno ${i}"><i class="fas fa-file-pdf"></i><span class="ml-0.5 font-bold">${i}</span></a>`;
                     } else {
-                         // Se não tem, mostra botão Upload
                          htmlRetorno += `
                         <label class="cursor-pointer w-6 h-6 rounded bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-600 text-[10px]" title="Upload Retorno ${i}">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -1327,7 +1524,6 @@
                 }
                 htmlRetorno += '</div>';
 
-                // --- LOGICA PARA DOWNLOAD DO XML NA TABELA (NOVO) ---
                 let htmlXmlLink = '';
                 if(r.xmlLink) {
                    htmlXmlLink = `<a href="${r.xmlLink}" target="_blank" class="w-7 h-7 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition flex items-center justify-center" title="Baixar XML Salvo"><i class="fas fa-code text-xs"></i></a>`;
@@ -1390,7 +1586,7 @@
                     
                     if(data.status === 'success'){
                         mostrarFeedback(`Retorno ${slot} Salvo!`);
-                        carregarNFs(); // Atualiza a tabela
+                        carregarNFs(); 
                     } else {
                         alert('Erro ao salvar: ' + data.message);
                     }
@@ -1597,7 +1793,6 @@
             }
         }
 
-        // --- FUNÇÃO DE EXPORTAÇÃO ADICIONADA ---
         function exportCSV() {
             if (!workingData || workingData.length === 0) {
                 alert("Sem dados para exportar.");
@@ -1607,7 +1802,6 @@
             const headers = ["Data", "Razão Social", "NF Venda", "NF Remessa", "NF Cobertura", "Fábrica", "Observação", "Link PDF", "Link Retorno 1", "Link Retorno 2", "Link Retorno 3"];
             const csvRows = [];
             
-            // Adiciona BOM para UTF-8 (Excel)
             csvRows.push('\uFEFF' + headers.join(";"));
 
             for (const row of workingData) {
@@ -1638,6 +1832,445 @@
             document.body.removeChild(link);
         }
 
+        /* =========================================
+            MÓDULO: TRANSPORTES (NOVA ABA INSERIDA)
+            ========================================= */
+        const TRANSPORTES_API_URL = "https://script.google.com/macros/s/AKfycbwsBhykLMkKaA6cdrp5wibyQfHjifvECt-ziJq5P94CpL5K5t04W_qG5zgT70BRMtnP/exec"; 
+
+        let transpDadosCompletos = [];
+        let transpSupplyDataMap = [];
+        let transpLogisticaDataMap = [];
+        let transpSupplyHeaders = [];
+        let transpLogisticaHeaders = [];
+
+        function switchTranspTab(tab) {
+            document.querySelectorAll('.transp-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.transp-tab-btn').forEach(el => {
+                el.classList.remove('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm', 'font-bold');
+                el.classList.add('text-slate-500', 'dark:text-slate-400', 'font-semibold');
+            });
+            document.getElementById('transp-tab-' + tab).classList.add('active');
+            const btn = document.getElementById('btn-transp-' + tab);
+            btn.classList.add('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm', 'font-bold');
+
+            if(tab === 'bi') setTimeout(transp_renderizarBI, 300);
+        }
+
+        function transp_mostrarStatus(msg, isError=false) {
+            const el = document.getElementById('transp-statusMessage');
+            el.textContent = msg;
+            
+            if(isError) {
+                el.className = `hidden md:block text-xs font-bold px-3 py-1.5 rounded-full text-rose-600 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-400`;
+            } else if(msg.toLowerCase().includes('sincronizado') || msg.toLowerCase().includes('salvo')) {
+                el.className = `hidden md:block text-xs font-bold px-3 py-1.5 rounded-full text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400`;
+            } else {
+                el.className = `hidden md:block text-xs font-bold px-3 py-1.5 rounded-full text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400`;
+            }
+            el.style.display = "block";
+        }
+
+        function transp_carregarDados() {
+            transp_mostrarStatus("Sincronizando...");
+            document.getElementById('transp-loadingSpinner').style.display = "inline-block";
+            document.getElementById('transp-syncIcon').style.display = "none";
+
+            fetch(TRANSPORTES_API_URL, { method: 'GET', redirect: 'follow' })
+            .then(res => res.json())
+            .then(data => {
+                transpDadosCompletos = data;
+                transp_processarDadosBrutos(data);
+                transp_mostrarStatus("Sincronizado");
+                if (document.getElementById('transp-tab-bi').classList.contains('active')) transp_renderizarBI();
+            })
+            .catch(err => transp_mostrarStatus("Erro na conexão", true))
+            .finally(() => {
+                document.getElementById('transp-loadingSpinner').style.display = "none";
+                document.getElementById('transp-syncIcon').style.display = "inline-block";
+            });
+        }
+
+        function transp_exportarDados(formato) {
+            if (!transpDadosCompletos || transpDadosCompletos.length === 0) {
+                alert("Não há dados para exportar. Sincronize primeiro.");
+                return;
+            }
+            const ws = XLSX.utils.aoa_to_sheet(transpDadosCompletos);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Base_Completa");
+            let dataAtual = new Date().toISOString().split('T')[0];
+            if (formato === 'xlsx') XLSX.writeFile(wb, `Exportacao_TorreControle_${dataAtual}.xlsx`);
+            else if (formato === 'csv') XLSX.writeFile(wb, `Exportacao_TorreControle_${dataAtual}.csv`, { bookType: "csv" });
+        }
+
+        function transp_processarDadosBrutos(data) {
+            if(!data || data.length === 0) return;
+            const rawHeaders = data[0];
+            const rows = data.slice(1).filter(r => r.join('').trim() !== '');
+
+            transpSupplyHeaders = rawHeaders.slice(0, 27);
+            transpLogisticaHeaders = ["Chave da Nota SLA"].concat([rawHeaders[26]]).concat(rawHeaders.slice(27));
+            transpLogisticaHeaders.push("SLA (STATUS)");
+
+            transpSupplyDataMap = rows.map(r => {
+                let obj = { _rawData: r.slice(0, 27) };
+                transpSupplyHeaders.forEach((h, i) => obj[h] = r[i]);
+                return obj;
+            });
+
+            transpLogisticaDataMap = rows.map(r => {
+                let chave = r[0];
+                let rowData = [chave].concat([r[26]]).concat(r.slice(27));
+                let obj = { _rawData: rowData };
+                transpLogisticaHeaders.forEach((h, i) => { if(h !== "SLA (STATUS)") obj[h] = rowData[i]; });
+                obj["SLA (STATUS)"] = transp_calcularSLA(obj["PREVISÃO ENTREGA"], obj["DATA DE ENTREGA "], obj["STATUS"]);
+                return obj;
+            });
+
+            transp_popularDropdown('transp-filterTipoProduto', transpSupplyDataMap, 'Tipo de Produto');
+            transp_popularDropdown('transp-filterCanal', transpSupplyDataMap, 'Empresa Canal');
+            transp_popularDropdown('transp-filterTransportadora', transpLogisticaDataMap, 'TRANSPORTADORA');
+            transp_popularDropdown('transp-filterStatus', transpLogisticaDataMap, 'STATUS');
+
+            transp_aplicarFiltrosSupply();
+            transp_aplicarFiltrosLogistica();
+        }
+
+        function transp_calcularSLA(prevStr, entregaStr, status) {
+            if (!prevStr) return `<span class="text-slate-300 dark:text-slate-600">-</span>`;
+            let dataPrev = new Date(prevStr);
+            let dataFim = (entregaStr && status === "ENTREGA REALIZADA") ? new Date(entregaStr) : new Date();
+            dataPrev.setHours(0,0,0,0); dataFim.setHours(0,0,0,0);
+            let diffDias = Math.ceil((dataFim.getTime() - dataPrev.getTime()) / (1000 * 3600 * 24));
+
+            if (status === "ENTREGA REALIZADA") {
+                return diffDias <= 0 ? 
+                    `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-lg text-[10px] font-bold" data-val="NO PRAZO"><i class="fa-solid fa-check"></i> NO PRAZO</span>` : 
+                    `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-1 rounded-lg text-[10px] font-bold" data-val="ATRASO">ATRASO ${diffDias}D</span>`;
+            }
+            return diffDias <= 0 ? 
+                `<span class="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded-lg text-[10px] font-bold" data-val="EM DIA">EM DIA</span>` : 
+                `<span class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-lg text-[10px] font-bold" data-val="PENDENTE">PENDENTE ${diffDias}D</span>`;
+        }
+
+        function transp_popularDropdown(selectId, dataMap, colName) {
+            const select = document.getElementById(selectId);
+            const unique = [...new Set(dataMap.map(i => i[colName]).filter(v => v))].sort();
+            select.innerHTML = `<option value="">Filtrar ${colName}...</option>` + unique.map(v => `<option value="${v}">${v}</option>`).join('');
+        }
+
+        function transp_toggleExpand(id) {
+            const el = document.getElementById('transp-details-' + id);
+            const row = document.getElementById('transp-row-' + id);
+            if (el.style.display === 'none' || el.style.display === '') {
+                el.style.display = 'table-row';
+                row.classList.add('bg-slate-50', 'dark:bg-slate-800/50', 'expanded');
+            } else {
+                el.style.display = 'none';
+                row.classList.remove('bg-slate-50', 'dark:bg-slate-800/50', 'expanded');
+            }
+        }
+
+        function transp_atualizarObsPlanilha(chaveNota, novaObs) {
+            transp_mostrarStatus("Salvando observação...");
+            fetch(TRANSPORTES_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "updateObs", chave: chaveNota, novaObs: novaObs })
+            })
+            .then(r => r.json())
+            .then(res => transp_mostrarStatus("Observação salva!"))
+            .catch(e => transp_mostrarStatus("Erro ao salvar obs", true));
+        }
+
+        function transp_atualizarStatusPlanilha(chaveNota, novoStatus) {
+            transp_mostrarStatus("Salvando...");
+            fetch(TRANSPORTES_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "updateStatus", chave: chaveNota, novoStatus: novoStatus })
+            })
+            .then(r => r.json())
+            .then(res => transp_mostrarStatus("Salvo com sucesso"))
+            .catch(e => transp_mostrarStatus("Erro ao salvar", true));
+        }
+
+        function transp_renderTabela(headId, bodyId, headers, dataList, tabType) {
+            const thead = document.getElementById(headId);
+            const tbody = document.getElementById(bodyId);
+            tbody.innerHTML = '';
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (tabType === 'supply') {
+                const qtdColunasVisiveis = 6; 
+                const colunasMacro = headers.slice(0, qtdColunasVisiveis);
+                
+                thead.innerHTML = `<tr>
+                    <th class="px-4 py-4 w-10"></th>
+                    ${colunasMacro.map(h => `<th class="px-4 py-4 font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 whitespace-nowrap">${h}</th>`).join('')}
+                </tr>`;
+
+                dataList.forEach((item, index) => {
+                    let tr = document.createElement('tr');
+                    tr.id = `transp-row-${index}`;
+                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border-b border-slate-100 dark:border-slate-800 cursor-pointer";
+                    tr.onclick = () => transp_toggleExpand(index);
+                    
+                    let tds = `<td class="px-4 py-3 text-center text-indigo-400 dark:text-indigo-500"><i class="fa-solid fa-chevron-down transp-expand-btn"></i></td>`;
+                    let chaveLinha = item._rawData[0]; 
+
+                    colunasMacro.forEach((h, i) => {
+                        let val = item._rawData[i];
+                        
+                        if (h && h.toString().toUpperCase().includes('OBS')) {
+                            tds += `<td class="px-4 py-3 whitespace-nowrap" onclick="event.stopPropagation()">
+                                <input type="text" value="${val === 'undefined' || !val ? '' : val}" 
+                                onchange="transp_atualizarObsPlanilha('${chaveLinha}', this.value)" 
+                                class="form-input text-[12px] font-medium px-3 py-1.5 rounded-lg w-full min-w-[150px] bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-700 dark:text-white" 
+                                placeholder="Adicionar obs...">
+                            </td>`;
+                        } else {
+                            if(String(val).includes('T') && String(val).includes('Z')) {
+                                let d = new Date(val); val = isNaN(d) ? val : d.toLocaleDateString('pt-BR');
+                            }
+                            tds += `<td class="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">${val || '-'}</td>`;
+                        }
+                    });
+                    tr.innerHTML = tds;
+                    tbody.appendChild(tr);
+
+                    let detailsTr = document.createElement('tr');
+                    detailsTr.id = `transp-details-${index}`;
+                    detailsTr.style.display = 'none';
+                    
+                    let gridInfo = headers.map((h, i) => {
+                        let val = item._rawData[i];
+
+                        if (h && h.toString().toUpperCase().includes('OBS')) {
+                            return `<div class="flex flex-col mb-3">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">${h}</span>
+                                <input type="text" value="${val === 'undefined' || !val ? '' : val}" 
+                                onclick="event.stopPropagation()" onchange="transp_atualizarObsPlanilha('${chaveLinha}', this.value)" 
+                                class="form-input text-sm px-3 py-2 rounded-lg border-slate-200 dark:border-slate-700 mt-1 bg-white dark:bg-slate-900 shadow-sm dark:text-white" placeholder="Adicionar obs...">
+                            </div>`;
+                        }
+
+                        if(String(val).includes('T') && String(val).includes('Z')) {
+                            let d = new Date(val); val = isNaN(d) ? val : d.toLocaleDateString('pt-BR');
+                        }
+                        if(String(val).startsWith('http')) val = `<a href="${val}" target="_blank" class="text-indigo-500 dark:text-indigo-400 hover:underline">Abrir Link <i class="fa-solid fa-link text-[10px]"></i></a>`;
+                        
+                        return `<div class="flex flex-col mb-3">
+                                  <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">${h}</span>
+                                  <span class="text-sm font-medium text-slate-800 dark:text-slate-200 break-words">${val || '-'}</span>
+                                </div>`;
+                    }).join('');
+
+                    detailsTr.innerHTML = `<td colspan="${qtdColunasVisiveis + 1}" class="bg-slate-50/50 dark:bg-slate-800/50 p-6 border-b border-slate-200 dark:border-slate-800 shadow-inner">
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            ${gridInfo}
+                        </div>
+                    </td>`;
+                    
+                    tbody.appendChild(detailsTr);
+                });
+
+            } else {
+                thead.innerHTML = `<tr>${headers.map((h,i) => (i === 0) ? '' : `<th class="px-4 py-4 font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 whitespace-nowrap">${h}</th>`).join('')}</tr>`;
+                
+                const statusColorsLight = { 'ENTREGA REALIZADA': '#f0fdf4', 'EM TRÂNSITO': '#eff6ff', 'Cancelado': '#fef2f2' };
+                const statusColorsDark = { 'ENTREGA REALIZADA': '#064e3b', 'EM TRÂNSITO': '#1e3a8a', 'Cancelado': '#7f1d1d' };
+                const statusColors = isDark ? statusColorsDark : statusColorsLight;
+
+                dataList.forEach(item => {
+                    let tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/80 transition-all border-b border-slate-100 dark:border-slate-800";
+                    item._rawData.forEach((val, i) => {
+                        if (i === 0) return;
+                        let td = document.createElement('td');
+                        td.className = "px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300";
+                        let strVal = String(val);
+
+                        if (headers[i] === 'STATUS') {
+                            let chave = item._rawData[0];
+                            let bgColor = statusColors[strVal] || (isDark ? '#0f172a' : '#f8fafc');
+                            let textColor = isDark ? '#f8fafc' : '#1e293b';
+                            
+                            td.innerHTML = `<select onchange="transp_atualizarStatusPlanilha('${chave}', this.value)" class="text-[11px] font-extrabold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm focus:ring-2 focus:ring-indigo-500 transition-colors" style="background-color: ${bgColor}; color: ${textColor};">
+                                <option value="${strVal}">${strVal}</option>
+                                <option value="ST EMITIDA">ST EMITIDA</option>
+                                <option value="EM TRÂNSITO">EM TRÂNSITO</option>
+                                <option value="ENTREGA REALIZADA">ENTREGA REALIZADA</option>
+                            </select>`;
+                        } else if (headers[i] && headers[i].toString().toUpperCase().includes('OBS')) {
+                            let chave = item._rawData[0];
+                            td.innerHTML = `<input type="text" value="${strVal === 'undefined' || !strVal ? '' : strVal}" 
+                                onchange="transp_atualizarObsPlanilha('${chave}', this.value)" 
+                                class="form-input text-[12px] font-medium px-3 py-1.5 rounded-lg w-full min-w-[150px] bg-slate-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white" 
+                                placeholder="Adicionar obs...">`;
+                        
+                        } else if (headers[i] === 'SLA (STATUS)') {
+                            td.innerHTML = strVal;
+                        } else if (strVal.startsWith('http')) {
+                            td.innerHTML = `<a href="${strVal}" target="_blank" class="text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Abrir</a>`;
+                        } else if (strVal.includes('T') && strVal.includes('Z')) {
+                            const d = new Date(strVal);
+                            td.textContent = isNaN(d) ? strVal : d.toLocaleDateString('pt-BR');
+                        } else {
+                            td.textContent = strVal;
+                        }
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function transp_aplicarFiltrosSupply() {
+            const search = document.getElementById('transp-searchSupply').value.toLowerCase();
+            const tipo = document.getElementById('transp-filterTipoProduto').value;
+            const canal = document.getElementById('transp-filterCanal').value;
+            const filt = transpSupplyDataMap.filter(i => 
+                (search === '' || i._rawData.some(v => String(v).toLowerCase().includes(search))) &&
+                (tipo === '' || i['Tipo de Produto'] === tipo) &&
+                (canal === '' || i['Empresa Canal'] === canal)
+            );
+            transp_renderTabela('transp-supplyHead', 'transp-supplyBody', transpSupplyHeaders, filt, 'supply');
+        }
+
+        function transp_aplicarFiltrosLogistica() {
+            const search = document.getElementById('transp-searchLogistica').value.toLowerCase();
+            const transp = document.getElementById('transp-filterTransportadora').value;
+            const status = document.getElementById('transp-filterStatus').value;
+            const filt = transpLogisticaDataMap.filter(i => 
+                (search === '' || i._rawData.some(v => String(v).toLowerCase().includes(search))) &&
+                (transp === '' || i['TRANSPORTADORA'] === transp) &&
+                (status === '' || i['STATUS'] === status)
+            );
+
+            let atrasos = 0, prazo = 0, pendente = 0;
+            filt.forEach(i => {
+                let s = String(i["SLA (STATUS)"]);
+                if(s.includes("ATRASO")) atrasos++;
+                else if(s.includes("NO PRAZO")) prazo++;
+                else pendente++;
+            });
+            document.getElementById('transp-kpi-prazo').textContent = prazo;
+            document.getElementById('transp-kpi-atraso').textContent = atrasos;
+            document.getElementById('transp-kpi-pendente').textContent = pendente;
+
+            transp_renderTabela('transp-logisticaHead', 'transp-logisticaBody', transpLogisticaHeaders, filt, 'logistica');
+        }
+
+        let transp_chartSLA, transp_chartTransp;
+        function transp_renderizarBI() {
+            if(transpLogisticaDataMap.length === 0) return;
+
+            const isDark = document.querySelector('html').classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+
+            const countTransp = {};
+            transpLogisticaDataMap.forEach(i => {
+                let t = i['TRANSPORTADORA'] || 'Não Definida';
+                if(t.trim() !== '') countTransp[t] = (countTransp[t] || 0) + 1;
+            });
+            const transpLabels = Object.keys(countTransp);
+            const transpSeries = Object.values(countTransp);
+
+            let cNoPrazo = 0, cAtraso = 0, cPendente = 0;
+            transpLogisticaDataMap.forEach(i => {
+                let s = String(i["SLA (STATUS)"]);
+                if(s.includes("ATRASO")) cAtraso++;
+                else if(s.includes("NO PRAZO")) cNoPrazo++;
+                else cPendente++;
+            });
+
+            const totalEntregas = transpLogisticaDataMap.length;
+            const eficiencia = totalEntregas > 0 ? ((cNoPrazo / totalEntregas) * 100).toFixed(1) : 0;
+            
+            document.getElementById('transp-bi-total-entregas').textContent = totalEntregas;
+            document.getElementById('transp-bi-eficiencia').textContent = eficiencia + '%';
+            document.getElementById('transp-bi-transportadoras').textContent = transpLabels.length;
+
+            const optionsTransp = {
+                series: [{ name: 'Entregas', data: transpSeries }],
+                chart: { type: 'bar', height: 300, toolbar: { show: false }, background: 'transparent' },
+                plotOptions: { bar: { borderRadius: 4, horizontal: false } },
+                dataLabels: { enabled: false },
+                xaxis: { categories: transpLabels, labels: { style: { colors: textColor } } },
+                yaxis: { labels: { style: { colors: textColor } } },
+                colors: ['#6366f1'],
+                theme: { mode: isDark ? 'dark' : 'light' }
+            };
+            
+            if(transp_chartTransp) transp_chartTransp.destroy();
+            transp_chartTransp = new ApexCharts(document.querySelector("#transp-chart-transportadoras"), optionsTransp);
+            transp_chartTransp.render();
+
+            const optionsSLA = {
+                series: [cNoPrazo, cAtraso, cPendente],
+                chart: { type: 'donut', height: 300, background: 'transparent' },
+                labels: ['No Prazo', 'Atraso', 'Pendente'],
+                colors: ['#10b981', '#f43f5e', '#0ea5e9'],
+                stroke: { colors: [isDark ? '#1e293b' : '#ffffff'] },
+                plotOptions: { pie: { donut: { size: '65%' } } },
+                theme: { mode: isDark ? 'dark' : 'light' },
+                legend: { labels: { colors: textColor } }
+            };
+
+            if(transp_chartSLA) transp_chartSLA.destroy();
+            transp_chartSLA = new ApexCharts(document.querySelector("#transp-chart-sla"), optionsSLA);
+            transp_chartSLA.render();
+        }
+
+        function transp_enviarFormulario(e) {
+            e.preventDefault();
+            const btn = document.getElementById('transp-btn-enviar-form');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processando...';
+            btn.disabled = true;
+
+            const lerArquivo = (id) => new Promise((res) => {
+                const file = document.getElementById(id).files[0];
+                if(!file) return res({ base64: null, name: null });
+                const reader = new FileReader();
+                reader.onload = () => res({ base64: reader.result.split(',')[1], name: file.name });
+                reader.readAsDataURL(file);
+            });
+
+            Promise.all([lerArquivo('transp-form-xml'), lerArquivo('transp-form-pdf'), lerArquivo('transp-form-xmlFab'), lerArquivo('transp-form-pdfFab')])
+            .then(([arqXml, arqPdf, arqXmlFab, arqPdfFab]) => {
+                const payload = {
+                    action: "submitForm",
+                    solicitante: document.getElementById('transp-form-solicitante').value,
+                    empresaCanal: document.getElementById('transp-form-empresa').value,
+                    oc: document.getElementById('transp-form-oc').value,
+                    tipoFrete: document.getElementById('transp-form-frete').value,
+                    tipoProduto: document.getElementById('transp-form-produto').value,
+                    paletes: document.getElementById('transp-form-paletes').value,
+                    nfFabrica: document.getElementById('transp-form-nfFabrica').value,
+                    base64XML: arqXml.base64, nomeXML: arqXml.name,
+                    base64PDF: arqPdf.base64, nomePDF: arqPdf.name,
+                    base64XMLFabrica: arqXmlFab.base64, nomeXMLFabrica: arqXmlFab.name,
+                    base64PDFFabrica: arqPdfFab.base64, nomePDFFabrica: arqPdfFab.name
+                };
+
+                fetch(TRANSPORTES_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+                .then(r => r.json())
+                .then(res => {
+                    if(res.success) {
+                        alert("🎉 Sucesso!");
+                        document.getElementById('transp-transporteForm').reset();
+                        transp_carregarDados();
+                        switchTranspTab('supply');
+                    }
+                })
+                .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
+            });
+        }
+
+        /* --- INICIALIZAÇÃO GERAL --- */
         document.addEventListener('DOMContentLoaded', () => {
             initTheme(); initMasks(); initXMLModule(); switchModule('xml-import');
         });
